@@ -47,29 +47,51 @@ impl super::MainWindow for FileManager{
                             Some(s) => {String::from(s)}
                         };
                         if text == String::new() {break;}
-                        if ui.button(text).clicked(){
-                            self.current_location = String::from("meow");
+                        if ui.button(&text).clicked(){
+                            self.current_location = text;
                             println!("{}", self.current_location);
                         };
                     }
                 },
             );
         }
+
         else {
+            let items = fm_backend::ls_all_in_dir(&self.current_location);
+            let num_of_dirs = items.0.len();
             let text_style = TextStyle::Body;
             let row_height = ui.text_style_height(&text_style);
-            let num_rows = 10_000;
+            let num_rows = num_of_dirs + items.1.len();
+
             ScrollArea::vertical().auto_shrink([false; 2]).show_rows(
                 ui,
                 row_height,
                 num_rows,
                 |ui, row_range| {
                     for row in row_range {
-                        let text = format!("This is row {}/{}", row + 1, num_rows);
-                        if ui.button(text).clicked(){
-                            self.current_location = String::from("meow");
-                            println!("{}", self.current_location);
-                        };
+                        if row < num_of_dirs{
+                            let path = match items.0.get(row){
+                                None => {String::new()}
+                                Some(s) => {String::from(s)}
+                            };
+                            let text = fm_backend::nm_from_path(&path);
+                            self.buttons.insert(String::from(&text), String::from(&path));
+                            if ui.button(text).clicked(){
+                                self.current_location = path;
+                                println!("{}", self.current_location);
+                            };
+                        }
+                        else{
+                            let path = match items.1.get(row-num_of_dirs){
+                                None => {String::new()}
+                                Some(s) => {String::from(s)}
+                            };
+                            let text = fm_backend::nm_from_path(&path);
+
+                            if ui.button(text).clicked(){
+                                println!("play");
+                            };
+                        }
                     }
                 },
             );
@@ -77,7 +99,7 @@ impl super::MainWindow for FileManager{
     }
 }
 
-fn ScrollAreaTemplate(ui: &mut egui::Ui) {
+fn scroll_area_template(ui: &mut egui::Ui) {
     ui.label(
         "",
     );
