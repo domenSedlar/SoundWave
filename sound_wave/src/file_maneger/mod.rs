@@ -1,14 +1,25 @@
 use std::collections::HashMap;
 use egui::*;
+use crate::MainWindow;
 
 mod fm_backend;
 
-struct FileManager{
+pub struct FileManager{
     paths: HashMap<String,String>,
     current_location: String
 }
+
 impl FileManager{
-    pub fn lorem_ipsum(ui: &mut egui::Ui) {
+    pub fn default() -> FileManager{
+        return FileManager{
+            paths: fm_backend::get_paths(),
+            current_location: String::new()
+        }
+    }
+}
+
+impl super::MainWindow for FileManager{
+    fn get_window(&mut self, ui: &mut egui::Ui) {
         ui.label(
             "",
         );
@@ -24,7 +35,10 @@ impl FileManager{
             |ui, row_range| {
                 for row in row_range {
                     let text = format!("This is row {}/{}", row + 1, num_rows);
-                    ui.label(text);
+                    if ui.button(text).clicked(){
+                        self.current_location = String::from("meow");
+                        println!("{}", self.current_location);
+                    };
                 }
             },
         );

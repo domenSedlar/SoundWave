@@ -3,6 +3,7 @@
 mod file_maneger;
 
 use eframe::egui;
+use crate::file_maneger::FileManager;
 
 fn main(){
 
@@ -20,11 +21,18 @@ fn main(){
     )
 }
 
-struct MyApp {}
+pub trait MainWindow{
+    fn get_window(&mut self, ui: &mut egui::Ui);
+}
+
+struct MyApp {
+    fm: FileManager
+}
 
 impl Default for MyApp {
     fn default() -> Self {
         Self {
+            fm:FileManager::default()
         }
     }
 }
@@ -71,7 +79,7 @@ impl eframe::App for MyApp {
                     ui.heading("Central Panel");
                 });
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    file_maneger::lorem_ipsum(ui);
+                    self.fm.get_window(ui);
                 });
             });
 
