@@ -27,7 +27,7 @@ fn abs_to_rel_path(abs: String, root: &String) -> String{
 
 }
 
-pub fn files_dir(path : String) -> String {
+pub fn file_nm_from_path(path : String) -> String {
     let mut result = String::new();
     let mut word = String::new();
 
@@ -113,17 +113,17 @@ pub fn get_folders_or_files(folders: bool) -> Vec<String>{
     ls
 }
 
-pub fn ls_all(dir: String) -> (Vec<String>, Vec<String>){
+pub fn ls_all_in_dir(dir: String) -> (Vec<String>, Vec<String>){
     let (dls, fls) = (get_folders_or_files(true), get_folders_or_files(false));
     let mut items: (Vec<String>, Vec<String>) = (Vec::new(), Vec::new());
     for s in dls{
-        if files_dir(String::from(&s)) == dir{
+        if file_nm_from_path(String::from(&s)) == dir{
             items.0.push(s);
         }
     }
 
     for s in fls{
-        if files_dir(String::from(&s)) == dir{
+        if file_nm_from_path(String::from(&s)) == dir{
             items.1.push(s);
         }
     }
@@ -131,12 +131,12 @@ pub fn ls_all(dir: String) -> (Vec<String>, Vec<String>){
     return items
 }
 
-pub fn ls_files(dir: String) -> Vec<String>{
+pub fn ls_files_in_dir(dir: String) -> Vec<String>{
     let ls = get_folders_or_files(false);
     let mut files : Vec<String> = Vec::new();
     for s in ls{
-        println!("{dir} - {}", files_dir(String::from(&s)));
-        if files_dir(String::from(&s)) == dir{
+        println!("{dir} - {}", file_nm_from_path(String::from(&s)));
+        if file_nm_from_path(String::from(&s)) == dir{
             files.push(s);
         }
     }
