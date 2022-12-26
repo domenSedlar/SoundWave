@@ -36,11 +36,26 @@ impl FileManager{
 impl super::MainWindow for FileManager{
     fn get_window(&mut self, ui: &mut egui::Ui) {
         if ui.button("..").clicked(){
-            self.current_location.pop();
-            self.current_location = fm_backend::path_from_name(&self.current_location);
-            println!("{}", self.current_location);
+            if self.current_location.contains("/") || self.current_location.contains("\\"){
+                self.current_location.pop();
+                self.current_location = fm_backend::path_from_name(&self.current_location);
+                println!("{}", self.current_location);
+            }
+            else{
+                self.current_location = String::new();
+            }
         }
+        
         if self.current_location == String::new(){
+            if self.current_location != self.shown_location{
+                self.items= (Vec::new(), Vec::new());
+
+                for (k, v) in &self.paths{
+                    self.items.0.push(String::from(k));
+                }
+                self.shown_location = String::from(&self.current_location);
+            }
+
             let text_style = TextStyle::Body;
             let row_height = ui.text_style_height(&text_style);
             let num_rows = self.items.0.len();
