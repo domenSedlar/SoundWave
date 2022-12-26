@@ -35,6 +35,11 @@ impl FileManager{
 
 impl super::MainWindow for FileManager{
     fn get_window(&mut self, ui: &mut egui::Ui) {
+        if ui.button("..").clicked(){
+            self.current_location.pop();
+            self.current_location = fm_backend::path_from_name(&self.current_location);
+            println!("{}", self.current_location);
+        }
         if self.current_location == String::new(){
             let text_style = TextStyle::Body;
             let row_height = ui.text_style_height(&text_style);
@@ -64,6 +69,7 @@ impl super::MainWindow for FileManager{
                 self.items = fm_backend::ls_all_in_dir(&self.current_location);
                 self.shown_location = String::from(&self.current_location);
             }
+
             let num_of_dirs = self.items.0.len();
             let text_style = TextStyle::Body;
             let row_height = ui.text_style_height(&text_style);

@@ -40,7 +40,7 @@ pub fn nm_from_path(path : &String) -> String {
     return nm;
 }
 
-pub fn path_from_name(path : String) -> String {
+pub fn path_from_name(path : &String) -> String {
     let mut result = String::new();
     let mut word = String::new();
 
@@ -130,13 +130,13 @@ pub fn ls_all_in_dir(dir: &String) -> (Vec<String>, Vec<String>){
     let (dls, fls) = (get_folders_or_files(true), get_folders_or_files(false));
     let mut items: (Vec<String>, Vec<String>) = (Vec::new(), Vec::new());
     for s in dls{
-        if &path_from_name(String::from(&s)) == dir{
+        if &path_from_name(&String::from(&s)) == dir{
             items.0.push(s);
         }
     }
 
     for s in fls{
-        if &path_from_name(String::from(&s)) == dir{
+        if &path_from_name(&String::from(&s)) == dir{
             items.1.push(s);
         }
     }
@@ -148,8 +148,8 @@ pub fn ls_files_in_dir(dir: &String) -> Vec<String>{
     let ls = get_folders_or_files(false);
     let mut files : Vec<String> = Vec::new();
     for s in ls{
-        println!("{dir} - {}", path_from_name(String::from(&s)));
-        if &path_from_name(String::from(&s)) == dir{
+        println!("{dir} - {}", path_from_name(&String::from(&s)));
+        if &path_from_name(&String::from(&s)) == dir{
             files.push(s);
         }
     }
