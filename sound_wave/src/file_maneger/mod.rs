@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::thread::current;
 
 use egui::*;
 //use gstreamer::glib::OptionArg::String as OtherString;
@@ -7,25 +8,27 @@ mod fm_backend;
 
 pub struct FileManager{
     paths: HashMap<String,String>,
-    path_names: Vec<String>,
     buttons: HashMap<String,String>,
     current_location: String,
+    shown_location: String,
+    items: (Vec<String>, Vec<String>)
 }
 
 impl FileManager{
     pub fn default() -> FileManager{
         let paths = fm_backend::get_paths();
-        let mut path_names= Vec::new();
+        let mut items= (Vec::new(), Vec::new());
 
         for (k, v) in &paths{
-            path_names.push(String::from(k));
+            items.0.push(String::from(k));
         }
 
         return FileManager{
             paths,
-            path_names,
             buttons: HashMap::new(),
-            current_location: String::new()
+            current_location: String::new(),
+            shown_location: String::new(),
+            items
         }
     }
 }
@@ -35,14 +38,14 @@ impl super::MainWindow for FileManager{
         if self.current_location == String::new(){
             let text_style = TextStyle::Body;
             let row_height = ui.text_style_height(&text_style);
-            let num_rows = self.path_names.len();
+            let num_rows = self.items.0.len();
             ScrollArea::vertical().auto_shrink([false; 2]).show_rows(
                 ui,
                 row_height,
                 num_rows,
                 |ui, row_range| {
                     for row in row_range {
-                        let text = match self.path_names.get(row){
+                        let text = match self.items.0.get(row){
                             None => {String::new()}
                             Some(s) => {String::from(s)}
                         };
@@ -57,11 +60,14 @@ impl super::MainWindow for FileManager{
         }
 
         else {
-            let items = fm_backend::ls_all_in_dir(&self.current_location);
-            let num_of_dirs = items.0.len();
+            if self.current_location != self.shown_location{
+                self.items = fm_backend::ls_all_in_dir(&self.current_location);
+                self.shown_location = String::from(&self.current_location);
+            }
+            let num_of_dirs = self.items.0.len();
             let text_style = TextStyle::Body;
             let row_height = ui.text_style_height(&text_style);
-            let num_rows = num_of_dirs + items.1.len();
+            let num_rows = num_of_dirs + self.items.1.len();
 
             ScrollArea::vertical().auto_shrink([false; 2]).show_rows(
                 ui,
@@ -70,7 +76,7 @@ impl super::MainWindow for FileManager{
                 |ui, row_range| {
                     for row in row_range {
                         if row < num_of_dirs{
-                            let path = match items.0.get(row){
+                            let path = match self.items.0.get(row){
                                 None => {String::new()}
                                 Some(s) => {String::from(s)}
                             };
@@ -82,7 +88,7 @@ impl super::MainWindow for FileManager{
                             };
                         }
                         else{
-                            let path = match items.1.get(row-num_of_dirs){
+                            let path = match self.items.1.get(row-num_of_dirs){
                                 None => {String::new()}
                                 Some(s) => {String::from(s)}
                             };
