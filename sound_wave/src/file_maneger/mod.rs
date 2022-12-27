@@ -1,8 +1,11 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::thread::current;
 
+use rfd::FileDialog;
 use egui::*;
 //use gstreamer::glib::OptionArg::String as OtherString;
+
 use crate::MainWindow;
 mod fm_backend;
 
@@ -11,7 +14,8 @@ pub struct FileManager{
     buttons: HashMap<String,String>,
     current_location: String,
     shown_location: String,
-    items: (Vec<String>, Vec<String>)
+    items: (Vec<String>, Vec<String>),
+    root: String
 }
 
 impl FileManager{
@@ -28,15 +32,26 @@ impl FileManager{
             buttons: HashMap::new(),
             current_location: String::new(),
             shown_location: String::new(),
-            items
+            items,
+            root: String::new()
         }
     }
 }
 
 impl super::MainWindow for FileManager{
     fn get_window(&mut self, ui: &mut egui::Ui) {
+        if ui.button("add path").clicked(){
+            let new_path = match FileDialog::new().pick_folder(){
+                None => {String::new()}
+                Some(a) => {String::from(a.to_str().unwrap())}
+            };
+            fm_backend::add_path(fm_backend::nm_from_path(&new_path), new_path);
+            self.current_location = String::new();
+            self.shown_location = String::from("meow");
+            self.paths = fm_backend::get_paths();
+        }
         if ui.button("..").clicked(){
-            if self.current_location.contains("/") || self.current_location.contains("\\"){
+            if self.current_location != self.root{
                 self.current_location.pop();
                 self.current_location = fm_backend::path_from_name(&self.current_location);
                 println!("{}", self.current_location);
@@ -48,6 +63,7 @@ impl super::MainWindow for FileManager{
         
         if self.current_location == String::new(){
             if self.current_location != self.shown_location{
+                println!("doin stuff");
                 self.items= (Vec::new(), Vec::new());
 
                 for (k, v) in &self.paths{
@@ -70,9 +86,11 @@ impl super::MainWindow for FileManager{
                             Some(s) => {String::from(s)}
                         };
                         if text == String::new() {break;}
+                        //self.buttons.insert(String::from(&text), String::from(&path));
                         if ui.button(&text).clicked(){
-                            self.current_location = text;
+                            self.current_location = String::from(self.paths.get(&text).unwrap());
                             println!("{}", self.current_location);
+                            self.root = String::from(self.paths.get(&text).unwrap());
                         };
                     }
                 },

@@ -56,7 +56,9 @@ pub fn path_from_name(path : &String) -> String {
     return result;
 }
 
-pub fn scan_folder(dir: String, root: &String) -> (Vec<String>, Vec<String>){
+///dir is the functions current location and should when called usually be the same as root.
+/// dir is there for the recursive function to track which folder to scan while root tells it where it started
+pub fn scan_folder(dir: &String, root: &String) -> (Vec<String>, Vec<String>){
     let paths = fs::read_dir(dir).unwrap();
 
     let mut dir : Vec<String> = Vec::new();
@@ -65,19 +67,19 @@ pub fn scan_folder(dir: String, root: &String) -> (Vec<String>, Vec<String>){
     for path in paths {
         if path.as_ref().unwrap().path().is_dir(){
             let temp = String::from(format!("{}", path.as_ref().unwrap().path().display()));
-            let result = scan_folder(temp, root);
+            let result = scan_folder(&temp, root);
             for i in result.0{
                 dir.push(i);
             }
             for i in result.1{
                 files.push(i);
             }
-            dir.push(abs_to_rel_path(format!("{}", path.unwrap().path().display()).replace(root, ""), root));
+            dir.push(path.unwrap().path().display().to_string());
         }
         else {
             if (path.as_ref().unwrap().path().display().to_string()).ends_with(".mp3")
             {
-                files.push(abs_to_rel_path(format!("{}", path.unwrap().path().display()), root))
+                files.push(path.unwrap().path().display().to_string())
                 //println!("Name: {}", path.unwrap().path().display());
             }
         }
@@ -197,10 +199,28 @@ pub fn path_to_str(paths: &HashMap<String,String>) -> String{
 }
 
 pub fn add_path(key: String, value: String){
-    let mut data = get_paths();
-    data.insert(key, value);
+    let mut paths = get_paths();
 
-    save_paths(&data);
+    let mut data = (get_folders_or_files(true), get_folders_or_files(false));
+    let items = scan_folder(&value, &value);
+
+    paths.insert(key, value);
+
+    for i in items.0{
+        if !data.0.contains(&i){
+            data.0.push(i);
+        }
+    }
+    for i in items.1{
+        if !data.1.contains(&i){
+            data.1.push(i);
+        }
+    }
+
+    save_folders_or_files(data.0, true);
+    save_folders_or_files(data.1, false);
+
+    save_paths(&paths);
 }
 
 fn print_scanned_folder() {
@@ -209,7 +229,7 @@ fn print_scanned_folder() {
 
     for (_, value) in paths
     {
-        let list = scan_folder(String::from(&value), &value);
+        let list = scan_folder(&String::from(&value), &value);
         println!("{:?}", list.0);
         println!("{:?}", list.1);
     }
