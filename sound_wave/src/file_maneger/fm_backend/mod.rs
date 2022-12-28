@@ -4,6 +4,9 @@ use std::collections::HashMap;
 use std::fs;
 use std::env;
 
+use crate::Song;
+mod tag_reader;
+
 fn abs_to_rel_path(abs: String, root: &String) -> String{
     let mut rel = abs.replace(root, "");
     let mut i = root.len() - 1;
@@ -64,6 +67,8 @@ pub fn scan_folder(dir: &String, root: &String) -> (Vec<String>, Vec<String>){
     let mut dir : Vec<String> = Vec::new();
     let mut files : Vec<String> = Vec::new();
 
+    let mut song;
+
     for path in paths {
         if path.as_ref().unwrap().path().is_dir(){
             let temp = String::from(format!("{}", path.as_ref().unwrap().path().display()));
@@ -79,7 +84,10 @@ pub fn scan_folder(dir: &String, root: &String) -> (Vec<String>, Vec<String>){
         else {
             if (path.as_ref().unwrap().path().display().to_string()).ends_with(".mp3")
             {
-                files.push(path.unwrap().path().display().to_string())
+                song = tag_reader::read(path.unwrap().path().display().to_string());
+                ///converting struct to string because in this module we mostly deal with file reading and writing
+                /// + that way i wont have to rewrite the code
+                files.push(song.serialize(';'));
                 //println!("Name: {}", path.unwrap().path().display());
             }
         }
@@ -93,7 +101,7 @@ pub fn get_paths() -> HashMap<String, String>{
 
     let data = fs::read_to_string(data_path).unwrap();
     let mut paths : HashMap<String, String> = HashMap::new();
-    let paths_str = data.split(";").collect::<Vec<&str>>();
+    let paths_str = data.split("\n").collect::<Vec<&str>>();
 
     for i in paths_str{
         if i == "" {continue}
@@ -118,7 +126,7 @@ pub fn get_folders_or_files(folders: bool) -> Vec<String>{
 
     let mut ls = Vec::new();
     let data = fs::read_to_string(data_path).unwrap();
-    let s = data.split(";").collect::<Vec<&str>>();
+    let s = data.split("\n").collect::<Vec<&str>>();
 
     for i in s{
         if i == "" {continue}
@@ -180,7 +188,7 @@ pub fn save_folders_or_files(f: Vec<String>, folders: bool){
 
     let mut data = String::new();
     for i in f{
-        data = format!("{data}{i};");
+        data = format!("{data}{i}\n");
     }
 
     fs::write(data_path, data).expect("Unable to write to file");
@@ -192,7 +200,7 @@ pub fn path_to_str(paths: &HashMap<String,String>) -> String{
 
     for (key, value) in paths
     {
-        data = format!("{data}{key}:{value};");
+        data = format!("{data}{key}:{value}\n");
     }
 
     return data
