@@ -74,7 +74,7 @@ pub fn start(rx: mpsc::Receiver<Command>, tx: single_value_channel::Updater<u64>
                             {
                                 //println!("{:?}", (audio_sink.query_position::<gst::format::ClockTime>()));
 
-                                audio_sink.seek_simple(gst::SeekFlags::KEY_UNIT,
+                                audio_sink.seek_simple(gst::SeekFlags::FLUSH,
                                                  gst::format::ClockTime::from_nseconds(
                                                  audio_sink.query_position::<gst::format::ClockTime>().unwrap().abs_diff(10000000000)
                                                  )).expect("panic message");
@@ -89,7 +89,7 @@ pub fn start(rx: mpsc::Receiver<Command>, tx: single_value_channel::Updater<u64>
                             {
                                 //println!("{:?}", (audio_sink.query_position::<gst::format::ClockTime>()));
 
-                                audio_sink.seek_simple(gst::SeekFlags::KEY_UNIT,
+                                audio_sink.seek_simple(gst::SeekFlags::FLUSH,
                                                        gst::format::ClockTime::from_nseconds(v)).expect("panic message");
                                 match pipeline.query_position::<gst::format::ClockTime>(){
                                     Some(t) => {
