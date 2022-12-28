@@ -6,7 +6,7 @@ use rfd::FileDialog;
 use egui::*;
 //use gstreamer::glib::OptionArg::String as OtherString;
 
-use crate::MainWindow;
+use crate::Window;
 mod fm_backend;
 
 pub struct FileManager{
@@ -38,7 +38,7 @@ impl FileManager{
     }
 }
 
-impl super::MainWindow for FileManager{
+impl super::Window for FileManager{
     fn get_window(&mut self, ui: &mut egui::Ui) {
         if ui.button("add path").clicked(){
             let new_path = match FileDialog::new().pick_folder(){

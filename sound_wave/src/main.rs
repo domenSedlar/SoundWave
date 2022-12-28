@@ -1,10 +1,12 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod file_maneger;
+mod player;
 
 use eframe::egui;
-use crate::file_maneger::FileManager;
 
+use crate::file_maneger::FileManager;
+use player::SoundPlayer;
 fn main(){
 
     // Log to stdout (if you run with `RUST_LOG=debug`).
@@ -21,18 +23,20 @@ fn main(){
     )
 }
 
-pub trait MainWindow{
+pub trait Window {
     fn get_window(&mut self, ui: &mut egui::Ui);
 }
 
 struct MyApp {
-    fm: FileManager
+    fm: FileManager,
+    pl: SoundPlayer
 }
 
 impl Default for MyApp {
     fn default() -> Self {
         Self {
-            fm:FileManager::default()
+            fm:FileManager::default(),
+            pl: SoundPlayer::default()
         }
     }
 }
@@ -40,15 +44,12 @@ impl Default for MyApp {
 impl eframe::App for MyApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
-            egui::TopBottomPanel::top("top_panel")
-                .resizable(true)
-                .min_height(32.0)
+            egui::TopBottomPanel::bottom("bottom_panel")
+                .resizable(false)
+                .min_height(50.0)
                 .show_inside(ui, |ui| {
-                    egui::ScrollArea::vertical().show(ui, |ui| {
-                        ui.vertical_centered(|ui| {
-                            ui.heading("Top Panel");
-                        });
-                        file_maneger::lorem_ipsum(ui);
+                    ui.vertical_centered(|ui| {
+                        self.pl.get_window(ui);
                     });
                 });
 
@@ -65,14 +66,18 @@ impl eframe::App for MyApp {
                     });
                 });
 
-            egui::TopBottomPanel::bottom("bottom_panel")
-                .resizable(false)
-                .min_height(0.0)
+            egui::TopBottomPanel::top("top_panel")
+                .resizable(true)
+                .min_height(32.0)
                 .show_inside(ui, |ui| {
-                    ui.vertical_centered(|ui| {
-                        ui.heading("Bottom Panel");
+                    egui::ScrollArea::vertical().show(ui, |ui| {
+                        ui.vertical_centered(|ui| {
+                            ui.heading("Top Panel");
+                        });
+                        file_maneger::lorem_ipsum(ui);
                     });
                 });
+
 
             egui::CentralPanel::default().show_inside(ui, |ui| {
                 ui.vertical_centered(|ui| {
