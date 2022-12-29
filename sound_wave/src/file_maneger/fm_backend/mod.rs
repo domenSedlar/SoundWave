@@ -84,10 +84,10 @@ pub fn scan_folder(dir: &String, root: &String) -> (Vec<String>, Vec<String>){
         else {
             if (path.as_ref().unwrap().path().display().to_string()).ends_with(".mp3")
             {
-                song = tag_reader::read(path.unwrap().path().display().to_string());
+                song = tag_reader::read_to_str(path.unwrap().path().display().to_string());
                 ///converting struct to string because in this module we mostly deal with file reading and writing
                 /// + that way i wont have to rewrite the code
-                files.push(song.serialize(';'));
+                files.push(song);
                 //println!("Name: {}", path.unwrap().path().display());
             }
         }
@@ -134,6 +134,14 @@ pub fn get_folders_or_files(folders: bool) -> Vec<String>{
     }
 
     ls
+}
+
+pub fn get_songs(path: &String) -> Vec<Song>{
+    let mut l = Vec::new();
+    for s in ls_files_in_dir(path){
+        l.push(Song::deserialize(s, ';'))
+    }
+    l
 }
 
 pub fn ls_all_in_dir(dir: &String) -> (Vec<String>, Vec<String>){
