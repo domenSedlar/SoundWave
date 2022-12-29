@@ -11,12 +11,11 @@ use super::Command;
 use single_value_channel::channel_starting_with;
 
 
-pub fn start(rx: mpsc::Receiver<Command>, tx: single_value_channel::Updater<u64>) {
+pub fn start(song: &str, rx: mpsc::Receiver<Command>, tx: single_value_channel::Updater<u64>) {
     // Initialize GStreamer
     gst::init().unwrap();
     // Build the pipeline
-    let uri =
-        "file:///home/blue/Music/NewPlaylists/Jinx/Just_Dropped_In.mp3";
+    let uri = format!("file://{song}");
     let pipeline = gst::parse_launch(&format!("playbin uri={}", uri)).unwrap();
 
     // Start playing
