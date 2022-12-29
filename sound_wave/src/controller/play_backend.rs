@@ -3,19 +3,13 @@ extern crate gstreamer_player as gst_player;
 use gst::prelude::*;
 use gst::{SeekFlags, SeekType, State, Element};
 use gst::event::{Seek, Step};
-
 use std::sync::mpsc;
 use gstreamer::ClockTime;
 
+use super::Command;
+
 use single_value_channel::channel_starting_with;
 
-pub enum Command {
-    PlayPause,
-    Forward,
-    Back,
-    SetPosInSeconds(u64),
-    Quit,
-}
 
 pub fn start(rx: mpsc::Receiver<Command>, tx: single_value_channel::Updater<u64>) {
     // Initialize GStreamer
@@ -26,9 +20,7 @@ pub fn start(rx: mpsc::Receiver<Command>, tx: single_value_channel::Updater<u64>
     let pipeline = gst::parse_launch(&format!("playbin uri={}", uri)).unwrap();
 
     // Start playing
-    pipeline
-        .set_state(gst::State::Playing)
-        .expect("Unable to set the pipeline to the `Playing` state");
+    pipeline.set_state(gst::State::Playing).expect("Unable to set the pipeline to the `Playing` state");
 
     let mut playing = true;
     let mut lenght_of_song: Option<u64> = None;

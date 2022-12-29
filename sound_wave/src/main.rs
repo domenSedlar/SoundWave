@@ -1,14 +1,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod file_maneger;
-mod player;
+mod controller;
 
 use eframe::egui;
 use gstreamer::glib::Char;
 //use gstreamer::glib::OptionArg::String;
 
 use crate::file_maneger::FileManager;
-use player::SoundPlayer;
+use controller::Controller;
 
 
 fn main(){
@@ -88,14 +88,14 @@ pub trait Window {
 
 struct MyApp {
     fm: FileManager,
-    pl: SoundPlayer
+    pl: Controller
 }
 
 impl Default for MyApp {
     fn default() -> Self {
         Self {
             fm:FileManager::default(),
-            pl: SoundPlayer::default()
+            pl: Controller::default()
         }
     }
 }
