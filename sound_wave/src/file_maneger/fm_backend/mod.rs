@@ -85,10 +85,8 @@ pub fn scan_folder(dir: &String, root: &String) -> (Vec<String>, Vec<String>){
             if (path.as_ref().unwrap().path().display().to_string()).ends_with(".mp3")
             {
                 song = tag_reader::read_to_str(path.unwrap().path().display().to_string());
-                ///converting struct to string because in this module we mostly deal with file reading and writing
-                /// + that way i wont have to rewrite the code
+
                 files.push(song);
-                //println!("Name: {}", path.unwrap().path().display());
             }
         }
     }

@@ -69,6 +69,7 @@ impl Song{
         while a < 5 && i < s.len()-1{
             if s.get(i).unwrap() == &';' {
                 a+=1;
+                i += 1;
                 continue
             }
             vars[a].push(*s.get(i).unwrap());

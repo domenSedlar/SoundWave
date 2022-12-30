@@ -132,10 +132,10 @@ impl super::Window for FileManager{
                             match self.items.1.get(row-num_of_dirs){
                                 None => {}
                                 Some(s) => {
-                                    let mut text = &format!("{0} - {1}", s.artist, s.name);
+                                    let mut text = format!("{0} - {1}", s.artist, s.name);
 
                                     if text == " - "{
-                                        text = &s.path;
+                                        text = fm_backend::nm_from_path(&s.path);
                                     }
 
                                     if ui.button(text).clicked(){
