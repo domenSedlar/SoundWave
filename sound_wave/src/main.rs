@@ -67,17 +67,20 @@ impl Song{
         let s = s.chars().collect::<Vec<char>>();
 
         while a < 5 && i < s.len()-1{
-            if s.get(i).unwrap() == &';' {a+=1; continue}
+            if s.get(i).unwrap() == &';' {
+                a+=1;
+                continue
+            }
             vars[a].push(*s.get(i).unwrap());
             i += 1;
         }
 
         return Song{
-            path: String::from(String::from(&vars[0])),
-            name: String::from(String::from(&vars[1])),
-            artist: String::from(String::from(&vars[2])),
-            album: String::from(String::from(&vars[3])),
-            year: String::from(String::from(&vars[4]))
+            path: String::from(&vars[0]),
+            name: String::from(&vars[1]),
+            artist: String::from(&vars[2]),
+            album: String::from(&vars[3]),
+            year: String::from(&vars[4])
         }
     }
 }

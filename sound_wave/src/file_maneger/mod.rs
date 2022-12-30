@@ -8,13 +8,14 @@ use egui::*;
 
 use crate::Window;
 mod fm_backend;
+use super::Song;
 
 pub struct FileManager{
     paths: HashMap<String,String>,
     buttons: HashMap<String,String>,
     current_location: String,
     shown_location: String,
-    items: (Vec<String>, Vec<String>),
+    items: (Vec<String>, Vec<Song>),
     root: String
 }
 
@@ -60,7 +61,8 @@ impl super::Window for FileManager{
                 self.current_location = String::new();
             }
         }
-        
+
+        ///Showing root folders
         if self.current_location == String::new(){
             if self.current_location != self.shown_location{
                 println!("doin stuff");
@@ -96,8 +98,8 @@ impl super::Window for FileManager{
                 },
             );
         }
-
         else {
+            ///Showing subfolders
             if self.current_location != self.shown_location{
                 self.items = fm_backend::ls_all_in_dir(&self.current_location);
                 self.shown_location = String::from(&self.current_location);
@@ -127,15 +129,21 @@ impl super::Window for FileManager{
                             };
                         }
                         else{
-                            let path = match self.items.1.get(row-num_of_dirs){
-                                None => {String::new()}
-                                Some(s) => {String::from(s)}
-                            };
-                            let text = fm_backend::nm_from_path(&path);
+                            match self.items.1.get(row-num_of_dirs){
+                                None => {}
+                                Some(s) => {
+                                    let mut text = &format!("{0} - {1}", s.artist, s.name);
 
-                            if ui.button(text).clicked(){
-                                println!("play");
+                                    if text == " - "{
+                                        text = &s.path;
+                                    }
+
+                                    if ui.button(text).clicked(){
+                                        println!("play");
+                                    };
+                                }
                             };
+
                         }
                     }
                 },
