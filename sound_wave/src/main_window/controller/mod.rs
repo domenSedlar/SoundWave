@@ -56,6 +56,8 @@ impl Controller {
     }
 
     pub fn get_window(&mut self, ui: &mut Ui) {
+        self.position = self.player.recv();
+
         ui.columns(5,|columns| {
             if columns[0].button("<").clicked() {
                 let a = self.back();
@@ -86,7 +88,6 @@ impl Controller {
         if self.position == 100 {
             self.next();
         }
-        self.position = self.player.recv();
     }
 }
 
