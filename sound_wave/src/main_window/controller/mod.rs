@@ -27,6 +27,18 @@ impl Controller {
     }
 
     fn next(&mut self){
+        self.index += 1;
+        match self.list.get(self.index){
+            None => {}
+            Some(a) => {self.player.play(String::from(&a.path));}
+        }
+    }
+
+    fn back(&mut self){
+        if self.index == 0{
+            return;
+        }
+        self.index -= 1;
         match self.list.get(self.index){
             None => {}
             Some(a) => {self.player.play(String::from(&a.path));}
@@ -44,20 +56,24 @@ impl Controller {
     }
 
     pub fn get_window(&mut self, ui: &mut Ui) {
-        ui.columns(4,|columns| {
-            if columns[1].button("|>").clicked() {
+        ui.columns(5,|columns| {
+            if columns[0].button("<").clicked() {
+                let a = self.back();
+                println!("previous song");
+            }
+            if columns[2].button("|>").clicked() {
                 let a = self.player.send(Command::PlayPause);
                 println!("{:?}", a);
             }
-            if columns[2].button(">>").clicked() {
+            if columns[3].button(">>").clicked() {
                 let a = self.player.send(Command::Forward);
                 println!("I work?");
             }
-            if columns[0].button("<<").clicked() {
+            if columns[1].button("<<").clicked() {
                 let a = self.player.send(Command::Back);
                 println!("Back!");
             }
-            if columns[3].button(">").clicked() {
+            if columns[4].button(">").clicked() {
                 let a = self.next();
                 println!("next");
             }
@@ -113,6 +129,9 @@ impl Player {
     }
 
     fn play(&mut self, song: String){
+
+        self.send(Command::Quit);
+
         let (tx1, rx1) = mpsc::channel::<Command>();
         let (mut rx2, tx2) = channel_starting_with::<u64>(0);
         println!("{}", &song);

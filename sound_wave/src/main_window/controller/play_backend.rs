@@ -58,7 +58,6 @@ pub fn start(song: String, rx: mpsc::Receiver<Command>, tx: single_value_channel
                             }
                             ()
                     }
-                    ///TODO če je preblizu začetka zamrzne za par sekund
                     Command::Back =>
                         {
                             if let Some(audio_sink) = pipeline.property::<Option<Element>>("audio-sink")
@@ -94,6 +93,13 @@ pub fn start(song: String, rx: mpsc::Receiver<Command>, tx: single_value_channel
                             }
                             ()
                     },
+
+                    Command::Quit => {
+                        pipeline
+                            .set_state(gst::State::Null)
+                            .expect("Unable to set the pipeline to the `Null` state");
+                        return;
+                    }
 
                     _ => ()
 
