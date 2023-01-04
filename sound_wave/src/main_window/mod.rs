@@ -32,6 +32,24 @@ impl Song{
         }
     }
 
+    pub fn clone(s: &Song) -> Song{
+        return Song{
+            path: String::from(&s.path),
+            name: String::from(&s.name),
+            artist: String::from(&s.artist),
+            album: String::from(&s.album),
+            year: String::from(&s.year)
+        }
+    }
+
+    pub fn clone_ls(ls: &Vec<Song>) -> Vec<Song>{
+        let mut nls : Vec<Song>= Vec::new();
+        for s in ls{
+            nls.push(Song::clone(s))
+        }
+        nls
+    }
+
     pub fn serialize(self, terminator: char) -> String{
         return format!(
             "{p}{t}{n}{t}{a}{t}{al}{t}{y}{t}",
@@ -189,7 +207,7 @@ impl Windows {
                                     }
 
                                     if ui.button(text).clicked(){
-                                        println!("play");
+                                        self.controller.play(Song::clone_ls(&self.file_manager.items.1))
                                     };
                                 }
                             };
@@ -200,6 +218,7 @@ impl Windows {
             );
         }
     }
+
 }
 
 fn scroll_area_template(ui: &mut egui::Ui) {

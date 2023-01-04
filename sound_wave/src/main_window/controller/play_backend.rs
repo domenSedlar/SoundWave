@@ -11,7 +11,7 @@ use super::Command;
 use single_value_channel::channel_starting_with;
 
 
-pub fn start(song: &str, rx: mpsc::Receiver<Command>, tx: single_value_channel::Updater<u64>) {
+pub fn start(song: String, rx: mpsc::Receiver<Command>, tx: single_value_channel::Updater<u64>) {
     // Initialize GStreamer
     gst::init().unwrap();
     // Build the pipeline

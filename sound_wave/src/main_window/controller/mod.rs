@@ -26,15 +26,25 @@ impl Controller {
         Controller {player: Player::default() , position: 0, list: Vec::new(), index: 0}
     }
 
-    pub fn next(&mut self){
+    fn next(&mut self){
         match self.list.get(self.index){
             None => {}
-            Some(a) => {self.player.play(&a.path);}
+            Some(a) => {self.player.play(String::from(&a.path));}
+        }
+    }
+
+    pub fn play(&mut self, list: Vec<Song>){
+        self.index = 0;
+        self.list = list;
+
+        match self.list.get(self.index){
+            None => {}
+            Some(a) => {self.player.play(String::from(&a.path));}
         }
     }
 
     pub fn get_window(&mut self, ui: &mut Ui) {
-        ui.columns(3,|columns| {
+        ui.columns(4,|columns| {
             if columns[1].button("|>").clicked() {
                 let a = self.player.send(Command::PlayPause);
                 println!("{:?}", a);
@@ -47,11 +57,13 @@ impl Controller {
                 let a = self.player.send(Command::Back);
                 println!("Back!");
             }
+            if columns[3].button(">").clicked() {
+                let a = self.next();
+                println!("next");
+            }
         });
 
         if ui.add(egui::Slider::new(&mut self.position, 0..=100)).drag_released(){
-            ///TODO
-            println!("tako bi lahko lažje naredil rewind");
             self.player.send(Command::SetPosInSeconds(self.position));
         };
 
@@ -100,10 +112,11 @@ impl Player {
         }
     }
 
-    fn play(&mut self, song: &str){
+    fn play(&mut self, song: String){
         let (tx1, rx1) = mpsc::channel::<Command>();
         let (mut rx2, tx2) = channel_starting_with::<u64>(0);
-        let handle = thread::spawn(move || start("/home/blue/Music/NewPlaylists/Jinx/Just_Dropped_In.mp3",rx1, tx2));
+        println!("{}", &song);
+        let handle = thread::spawn(move || start(song ,rx1, tx2));
         self.tx = Option::Some(tx1);
         self.rx = rx2;
         self.handle = Option::Some(handle);

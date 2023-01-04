@@ -26,7 +26,7 @@ impl FileManager{
         for (k, v) in &paths{
             items.0.push(String::from(k));
         }
-        
+
         FileManager{
         paths,
         buttons: HashMap::new(),
