@@ -1,14 +1,12 @@
-#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "main_window")]
 
-mod file_maneger;
-mod controller;
+mod main_window;
 
 use eframe::egui;
 use gstreamer::glib::Char;
 //use gstreamer::glib::OptionArg::String;
 
-use crate::file_maneger::FileManager;
-use controller::Controller;
+use crate::main_window::Windows;
 
 
 fn main(){
@@ -28,78 +26,15 @@ fn main(){
     )
 }
 
-pub struct Song {
-    path: String,
-    name: String,
-    artist: String,
-    album: String,
-    year: String
-}
-
-impl Song{
-    pub fn default() -> Song{
-        return Song{
-            path: String::new(),
-            name: String::new(),
-            artist: String::new(),
-            album: String::new(),
-            year: String::new()
-        }
-    }
-
-    pub fn serialize(self, terminator: char) -> String{
-        return format!(
-            "{p}{t}{n}{t}{a}{t}{al}{t}{y}{t}",
-            p = self.path,
-            t = terminator,
-            n = self.name,
-            a = self.artist,
-            al = self.album,
-            y = self.year
-        )
-    }
-
-    pub fn deserialize(s: String, terminator: char) -> Song{
-        let mut vars: [String; 5] = [String::new(), String::new(), String::new(), String::new(), String::new()];
-        let mut a = 0;
-        let mut i = 0;
-
-        let s = s.chars().collect::<Vec<char>>();
-
-        while a < 5 && i < s.len()-1{
-            if s.get(i).unwrap() == &';' {
-                a+=1;
-                i += 1;
-                continue
-            }
-            vars[a].push(*s.get(i).unwrap());
-            i += 1;
-        }
-
-        return Song{
-            path: String::from(&vars[0]),
-            name: String::from(&vars[1]),
-            artist: String::from(&vars[2]),
-            album: String::from(&vars[3]),
-            year: String::from(&vars[4])
-        }
-    }
-}
-
-pub trait Window {
-    fn get_window(&mut self, ui: &mut egui::Ui);
-}
 
 struct MyApp {
-    fm: FileManager,
-    pl: Controller
+    w: Windows,
 }
 
 impl Default for MyApp {
     fn default() -> Self {
         Self {
-            fm:FileManager::default(),
-            pl: Controller::default()
+            w: Windows::default(),
         }
     }
 }
@@ -112,7 +47,7 @@ impl eframe::App for MyApp {
                 .min_height(50.0)
                 .show_inside(ui, |ui| {
                     ui.vertical_centered(|ui| {
-                        self.pl.get_window(ui);
+                        self.w.get_controller(ui);
                     });
                 });
 
@@ -125,7 +60,7 @@ impl eframe::App for MyApp {
                         ui.heading("Left Panel");
                     });
                     egui::ScrollArea::vertical().show(ui, |ui| {
-                        file_maneger::lorem_ipsum(ui);
+                        main_window::lorem_ipsum(ui);
                     });
                 });
 
@@ -137,7 +72,7 @@ impl eframe::App for MyApp {
                         ui.vertical_centered(|ui| {
                             ui.heading("Top Panel");
                         });
-                        file_maneger::lorem_ipsum(ui);
+                        main_window::lorem_ipsum(ui);
                     });
                 });
 
@@ -146,7 +81,7 @@ impl eframe::App for MyApp {
                     ui.heading("Central Panel");
                 });
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    self.fm.get_window(ui);
+                    self.w.get_file_manager_window(ui);
                 });
             });
 

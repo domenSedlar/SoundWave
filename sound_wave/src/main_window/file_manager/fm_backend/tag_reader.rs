@@ -1,5 +1,5 @@
 use std::fs;
-use crate::Song;
+use super::super::Song;
 
 pub fn read_to_song(file: String) -> Song{
     let mut data = fs::read(&file).expect("Unable to read file");

@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::env;
 
-use crate::Song;
+use super::super::Song;
 mod tag_reader;
 
 fn abs_to_rel_path(abs: String, root: &String) -> String{
@@ -238,7 +238,7 @@ pub fn add_path(key: String, value: String){
 
 fn print_scanned_folder() {
     let mut paths = HashMap::new();
-    paths.insert(String::from("Music"), String::from("/home/blue/Projects/Programming/Code4/RustyFileManeger/file_maneger/Music/"));
+    paths.insert(String::from("Music"), String::from("/home/blue/Projects/Programming/Code4/RustyFileManeger/main_window/Music/"));
 
     for (_, value) in paths
     {

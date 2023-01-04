@@ -32,10 +32,8 @@ impl Controller {
             Some(a) => {self.player.play(&a.path);}
         }
     }
-}
 
-impl super::Window for Controller {
-    fn get_window(&mut self, ui: &mut Ui) {
+    pub fn get_window(&mut self, ui: &mut Ui) {
         ui.columns(3,|columns| {
             if columns[1].button("|>").clicked() {
                 let a = self.player.send(Command::PlayPause);
@@ -102,7 +100,7 @@ impl Player {
         }
     }
 
-    pub fn play(&mut self, song: &str){
+    fn play(&mut self, song: &str){
         let (tx1, rx1) = mpsc::channel::<Command>();
         let (mut rx2, tx2) = channel_starting_with::<u64>(0);
         let handle = thread::spawn(move || start("/home/blue/Music/NewPlaylists/Jinx/Just_Dropped_In.mp3",rx1, tx2));
