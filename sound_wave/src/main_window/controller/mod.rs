@@ -45,8 +45,8 @@ impl Controller {
         }
     }
 
-    pub fn play(&mut self, list: Vec<Song>){
-        self.index = 0;
+    pub fn play(&mut self, list: Vec<Song>, i:usize){
+        self.index = i;
         self.list = list;
 
         match self.list.get(self.index){

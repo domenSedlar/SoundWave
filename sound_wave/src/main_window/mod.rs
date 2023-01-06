@@ -32,6 +32,16 @@ impl Song{
         }
     }
 
+    pub fn find(path: &str, ls: &mut Vec<Song>) -> usize{
+        for i in 0..ls.len(){
+             if &(ls.get(i).unwrap().path) == path{
+                 return i;
+             }
+        }
+
+        return 0;
+    }
+
     pub fn clone(s: &Song) -> Song{
         return Song{
             path: String::from(&s.path),
@@ -207,7 +217,9 @@ impl Windows {
                                     }
 
                                     if ui.button(text).clicked(){
-                                        self.controller.play(Song::clone_ls(&self.file_manager.items.1))
+                                        let mut pls = Song::clone_ls(&self.file_manager.items.1);
+                                        let i: usize = Song::find(&s.path, &mut pls);
+                                        self.controller.play(pls, i);
                                     };
                                 }
                             };
