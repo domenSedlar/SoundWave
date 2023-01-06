@@ -6,98 +6,14 @@ use rfd::FileDialog;
 use egui::*;
 //use gstreamer::glib::OptionArg::String as OtherString;
 
-use egui::Window;
 mod controller;
 mod file_manager;
+mod song;
+use song::Song;
+
 use file_manager::FileManager;
 
 use controller::Controller;
-
-pub struct Song {
-    path: String,
-    name: String,
-    artist: String,
-    album: String,
-    year: String
-}
-
-impl Song{
-    pub fn default() -> Song{
-        return Song{
-            path: String::new(),
-            name: String::new(),
-            artist: String::new(),
-            album: String::new(),
-            year: String::new()
-        }
-    }
-
-    pub fn find(path: &str, ls: &mut Vec<Song>) -> usize{
-        for i in 0..ls.len(){
-             if &(ls.get(i).unwrap().path) == path{
-                 return i;
-             }
-        }
-
-        return 0;
-    }
-
-    pub fn clone(s: &Song) -> Song{
-        return Song{
-            path: String::from(&s.path),
-            name: String::from(&s.name),
-            artist: String::from(&s.artist),
-            album: String::from(&s.album),
-            year: String::from(&s.year)
-        }
-    }
-
-    pub fn clone_ls(ls: &Vec<Song>) -> Vec<Song>{
-        let mut nls : Vec<Song>= Vec::new();
-        for s in ls{
-            nls.push(Song::clone(s))
-        }
-        nls
-    }
-
-    pub fn serialize(self, terminator: char) -> String{
-        return format!(
-            "{p}{t}{n}{t}{a}{t}{al}{t}{y}{t}",
-            p = self.path,
-            t = terminator,
-            n = self.name,
-            a = self.artist,
-            al = self.album,
-            y = self.year
-        )
-    }
-
-    pub fn deserialize(s: String, terminator: char) -> Song{
-        let mut vars: [String; 5] = [String::new(), String::new(), String::new(), String::new(), String::new()];
-        let mut a = 0;
-        let mut i = 0;
-
-        let s = s.chars().collect::<Vec<char>>();
-
-        while a < 5 && i < s.len()-1{
-            if s.get(i).unwrap() == &';' {
-                a+=1;
-                i += 1;
-                continue
-            }
-            vars[a].push(*s.get(i).unwrap());
-            i += 1;
-        }
-
-        return Song{
-            path: String::from(&vars[0]),
-            name: String::from(&vars[1]),
-            artist: String::from(&vars[2]),
-            album: String::from(&vars[3]),
-            year: String::from(&vars[4])
-        }
-    }
-}
 
 pub struct Windows {
     file_manager: FileManager,
@@ -190,7 +106,7 @@ impl Windows {
                 ui,
                 row_height,
                 num_rows,
-                |ui, row_range| {
+                |mut ui, row_range| {
                     for row in row_range {
                         ///folders
                         if row < num_of_dirs{
@@ -216,11 +132,18 @@ impl Windows {
                                         text = file_manager::fm_backend::nm_from_path(&s.path);
                                     }
 
-                                    if ui.button(text).clicked(){
-                                        let mut pls = Song::clone_ls(&self.file_manager.items.1);
-                                        let i: usize = Song::find(&s.path, &mut pls);
-                                        self.controller.play(pls, i);
-                                    };
+                                    ui.push_id(&row, |ui| {
+                                        let r = ui.horizontal(|a| {
+                                            &s.get_panel(a);
+                                        });
+                                        let r = r.response.interact(egui::Sense::click());
+                                        if r.clicked(){
+                                            let mut pls = Song::clone_ls(&self.file_manager.items.1);
+                                            let i: usize = Song::find(&s.path, &mut pls);
+                                            self.controller.play(pls, i);
+                                        }
+                                    });
+
                                 }
                             };
 
