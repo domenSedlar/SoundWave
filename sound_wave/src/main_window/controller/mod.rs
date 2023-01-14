@@ -18,7 +18,7 @@ pub struct Controller {
     player: Player,
     position: u64,
     pub(crate) list: Vec<Song>,
-    index: usize
+    pub(crate) index: usize
 }
 
 impl Controller {
@@ -31,6 +31,13 @@ impl Controller {
         match self.list.get(self.index){
             None => {}
             Some(a) => {self.player.play(String::from(&a.path));}
+        }
+    }
+
+    pub fn get_current_song(&self) -> String{
+        match &self.list.get(self.index) {
+            None => {return String::new()}
+            Some(a) => {return String::from(&a.path)}
         }
     }
 

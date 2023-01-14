@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::thread::current;
+use egui::Color32;
 
 use rfd::FileDialog;
 use egui::*;
@@ -38,7 +39,7 @@ impl Windows {
 
     pub fn get_controller(&mut self, ui: &mut egui::Ui) {
         egui::SidePanel::left("Btn").max_width(5.0).show_inside(ui, |ui| {
-            if ui.button("a").clicked(){
+            if ui.button("=").clicked(){
                 self.current_window = CurrentWindow::Queue;
             }
         });
@@ -72,7 +73,7 @@ impl Windows {
                             if text == " - "{
                                 text = file_manager::fm_backend::nm_from_path(&s.path);
                             }
-                            let r = &s.get_panel2(ui, &row);
+                            let r = &s.get_panel2(ui, &row, row== self.controller.index);
                             if r.clicked(){
                                 self.controller.to(row);
                             }
@@ -150,6 +151,7 @@ impl Windows {
                 self.file_manager.shown_location = String::from(&self.file_manager.current_location);
             }
 
+            let curr_song = &self.controller.get_current_song();
             let num_of_dirs = self.file_manager.items.0.len();
             let text_style = TextStyle::Body;
             let row_height = ui.text_style_height(&text_style);
@@ -184,18 +186,12 @@ impl Windows {
                                     if text == " - "{
                                         text = file_manager::fm_backend::nm_from_path(&s.path);
                                     }
-
-                                    ui.push_id(&row, |ui| {
-                                        let r = ui.horizontal(|a| {
-                                            &s.get_panel(a);
-                                        });
-                                        let r = r.response.interact(egui::Sense::click());
+                                        let r = &s.get_panel2(ui, &row, curr_song == &s.path);
                                         if r.clicked(){
                                             let mut pls = Song::clone_ls(&self.file_manager.items.1);
                                             let i: usize = Song::find(&s.path, &mut pls);
                                             self.controller.play(pls, i);
                                         }
-                                    });
 
                                 }
                             };

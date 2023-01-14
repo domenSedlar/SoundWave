@@ -1,4 +1,6 @@
 use egui::Response;
+use egui::Color32;
+use egui_extras::{Size, StripBuilder};
 
 pub struct Song {
     pub(crate) path: String,
@@ -98,18 +100,44 @@ impl Song{
 
     }
 
-    pub fn get_panel2(&self, ui: &mut egui::Ui, row: &usize) -> Response {
+    pub fn get_panel2(&self, ui: &mut egui::Ui, row: &usize, playing: bool) -> Response {
+
+        let dark_mode = ui.visuals().dark_mode;
+        let faded_color = ui.visuals().window_fill();
+        let faded_color = |color: Color32| -> Color32 {
+            use egui::Rgba;
+            let t = if dark_mode { 0.95 } else { 0.8 };
+            egui::lerp(Rgba::from(color)..=Rgba::from(faded_color), t).into()
+        };
 
             let r = ui.push_id(row, |ui| {
                 ui.horizontal(|a| {
-            a.label("LARGE\nIMAGE\nGOES\nHERE");
-            egui::Grid::new(&self.path).show(a, |a| {
-                a.label(&self.name);
-                a.end_row();
-                a.label(&self.artist);
-                a.end_row();
-            });
-            a.label(&self.album);
+                        StripBuilder::new(a)
+                            .size(Size::exact(60.0))
+                            .size(Size::remainder())
+                            .size(Size::exact(5.0))
+                            .vertical(|mut strip| {
+                                strip.cell(|ui| {
+                                    if playing{
+                                        ui.painter().rect_filled(
+                                            ui.available_rect_before_wrap(),
+                                            0.0,
+                                            faded_color(Color32::BLUE),
+                                        );
+                                    }
+                                    ui.label("LARGE\nIMAGE\nGOES\nHERE");
+                                    egui::Grid::new(&self.path).show(ui, |a| {
+                                        a.label(&self.name);
+                                        a.end_row();
+                                        a.label(&self.artist);
+                                        a.end_row();
+                                    });
+                                    ui.label(&self.album);
+
+                                });
+                            });
+
+
                 });        });
 
         let r = r.response.interact(egui::Sense::click());
