@@ -81,7 +81,7 @@ impl eframe::App for MyApp {
                     ui.heading("Central Panel");
                 });
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    self.w.get_file_manager_window(ui);
+                    self.w.get_main_window(ui);
                 });
             });
 

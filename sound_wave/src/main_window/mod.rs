@@ -15,21 +15,74 @@ use file_manager::FileManager;
 
 use controller::Controller;
 
+enum CurrentWindow{
+    Files,
+    Playlists,
+    Queue
+}
+
 pub struct Windows {
     file_manager: FileManager,
-    controller: Controller
+    controller: Controller,
+    current_window: CurrentWindow
 }
 
 impl Windows {
     pub fn default() -> Windows {
         return Windows {
             file_manager: FileManager::default(),
-            controller: Controller::default()
+            controller: Controller::default(),
+            current_window: CurrentWindow::Files
         }
     }
 
     pub fn get_controller(&mut self, ui: &mut egui::Ui) {
+        egui::SidePanel::left("Btn").max_width(5.0).show_inside(ui, |ui| {
+            if ui.button("a").clicked(){
+                self.current_window = CurrentWindow::Queue;
+            }
+        });
         self.controller.get_window(ui);
+    }
+
+    pub fn get_main_window(&mut self, ui: &mut egui::Ui){
+        match self.current_window{
+            CurrentWindow::Files => {self.get_file_manager_window(ui)},
+            CurrentWindow::Queue => {self.get_queue_window(ui)}
+            _ => ()
+        }
+    }
+
+    fn get_queue_window(&mut self, ui: &mut egui::Ui){
+        let text_style = TextStyle::Body;
+        let row_height = ui.text_style_height(&text_style);
+        let num_rows = self.controller.list.len();
+
+        ScrollArea::vertical().auto_shrink([false; 2]).show_rows(
+            ui,
+            row_height,
+            num_rows,
+            |mut ui, row_range| {
+                for row in row_range {
+                    match &self.controller.list.get(row){
+                        None => {}
+                        Some(s) => {
+                            let mut text = format!("{0} - {1}", s.artist, s.name);
+
+                            if text == " - "{
+                                text = file_manager::fm_backend::nm_from_path(&s.path);
+                            }
+                            let r = &s.get_panel2(ui, &row);
+                            if r.clicked(){
+                                self.controller.to(row);
+                            }
+
+                        }
+                    };
+
+                }
+            },
+        );
     }
 
     pub fn get_file_manager_window(&mut self, ui: &mut egui::Ui) {

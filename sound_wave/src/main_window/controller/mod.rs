@@ -17,7 +17,7 @@ use super::Song;
 pub struct Controller {
     player: Player,
     position: u64,
-    list: Vec<Song>,
+    pub(crate) list: Vec<Song>,
     index: usize
 }
 
@@ -48,6 +48,15 @@ impl Controller {
     pub fn play(&mut self, list: Vec<Song>, i:usize){
         self.index = i;
         self.list = list;
+
+        match self.list.get(self.index){
+            None => {}
+            Some(a) => {self.player.play(String::from(&a.path));}
+        }
+    }
+
+    pub fn to(&mut self, i:usize){
+        self.index = i;
 
         match self.list.get(self.index){
             None => {}

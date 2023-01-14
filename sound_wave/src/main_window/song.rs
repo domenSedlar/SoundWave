@@ -1,3 +1,4 @@
+use egui::Response;
 
 pub struct Song {
     pub(crate) path: String,
@@ -94,6 +95,25 @@ impl Song{
             ui.end_row();
         });
         ui.label(&self.album);
+
+    }
+
+    pub fn get_panel2(&self, ui: &mut egui::Ui, row: &usize) -> Response {
+
+            let r = ui.push_id(row, |ui| {
+                ui.horizontal(|a| {
+            a.label("LARGE\nIMAGE\nGOES\nHERE");
+            egui::Grid::new(&self.path).show(a, |a| {
+                a.label(&self.name);
+                a.end_row();
+                a.label(&self.artist);
+                a.end_row();
+            });
+            a.label(&self.album);
+                });        });
+
+        let r = r.response.interact(egui::Sense::click());
+        return r
 
     }
 }
