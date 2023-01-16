@@ -60,7 +60,7 @@ impl eframe::App for MyApp {
                         ui.heading("Left Panel");
                     });
                     egui::ScrollArea::vertical().show(ui, |ui| {
-                        main_window::lorem_ipsum(ui);
+                        self.w.get_tabs_window(ui);
                     });
                 });
 

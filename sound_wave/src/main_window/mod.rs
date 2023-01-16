@@ -10,11 +10,13 @@ use egui::*;
 mod controller;
 mod file_manager;
 mod song;
+mod playlists;
+
 use song::Song;
-
 use file_manager::FileManager;
-
 use controller::Controller;
+use playlists::Playlists;
+
 
 enum CurrentWindow{
     Files,
@@ -25,6 +27,8 @@ enum CurrentWindow{
 pub struct Windows {
     file_manager: FileManager,
     controller: Controller,
+    playlists: Playlists,
+
     current_window: CurrentWindow
 }
 
@@ -33,7 +37,16 @@ impl Windows {
         return Windows {
             file_manager: FileManager::default(),
             controller: Controller::default(),
+            playlists: Playlists::default(),
             current_window: CurrentWindow::Files
+        }
+    }
+    pub fn get_tabs_window(&mut self, ui: &mut egui::Ui){
+        if ui.button("Browse files").clicked(){
+            self.current_window = CurrentWindow::Files;
+        }
+        if ui.button("Playlists").clicked(){
+            self.current_window = CurrentWindow::Playlists;
         }
     }
 
@@ -50,8 +63,12 @@ impl Windows {
         match self.current_window{
             CurrentWindow::Files => {self.get_file_manager_window(ui)},
             CurrentWindow::Queue => {self.get_queue_window(ui)}
-            _ => ()
+            CurrentWindow::Playlists => {self.get_playlists_window(ui)}
         }
+    }
+
+    fn get_playlists_window(&mut self, ui: &mut egui::Ui){
+        self.playlists.get_adding_window(ui);
     }
 
     fn get_queue_window(&mut self, ui: &mut egui::Ui){
