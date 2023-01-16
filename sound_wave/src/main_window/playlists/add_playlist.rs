@@ -10,13 +10,13 @@ use std::fs;
 pub struct PlaylistAdder {
     name_to_add: String,
     descp_to_add: String,
-    ls_of_playls: Vec<String>,
+    ls_of_playls: [Vec<String>; 2],
     image: String,
     i: RetainedImage
 }
 
 impl PlaylistAdder{
-    pub fn default(ls: Vec<String>) -> PlaylistAdder{
+    pub fn default(ls: [Vec<String>; 2]) -> PlaylistAdder{
         PlaylistAdder{
             name_to_add: "".to_string(),
             descp_to_add: "".to_string(),
@@ -30,7 +30,7 @@ impl PlaylistAdder{
         }
     }
 
-    pub fn get_adding_window(&mut self, ui: &mut egui::Ui) -> bool{
+    pub fn get_adding_window(&mut self, ui: &mut egui::Ui) -> Option<[String;3]>{
         ui.horizontal(|ui| {
             ui.vertical(|ui| {
 
@@ -38,7 +38,7 @@ impl PlaylistAdder{
                     ui.label("Name:");
                     ui.text_edit_singleline(&mut self.name_to_add);
 
-                    if self.ls_of_playls.contains(&self.name_to_add){
+                    if self.ls_of_playls[0].contains(&self.name_to_add){
                         ui.colored_label(Color32::RED,"name taken");
                     }
                 });
@@ -70,12 +70,12 @@ impl PlaylistAdder{
         });
 
         if ui.button("add").clicked(){
-            if !(self.ls_of_playls.contains(&self.name_to_add)){
+            if !(self.ls_of_playls[0].contains(&self.name_to_add)){
                 println!("wow");
-                return true;
+                return Some([String::from(&self.name_to_add),String::from(&self.descp_to_add),String::from(&self.image)]);
             }
         }
 
-        return false;
+        return Option::None;
     }
 }
