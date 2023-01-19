@@ -16,13 +16,14 @@ impl PlayLs{
         let mut arr: [String; 2] = [String::new(), String::new()];
 
         for c in data.chars(){
-            if c == (28 as char){ a += 1; }
+            if c == (28 as char){ a = 1; continue; }
             if c == '\r'{
-                a -= 1;
+                a = 0;
                 l += 1;
                 ls[0].push(String::from(&arr[0]));
                 ls[1].push(String::from(&arr[1]));
                 arr = [String::new(), String::new()];
+                continue;
             }
             arr[a].push(c);
         }

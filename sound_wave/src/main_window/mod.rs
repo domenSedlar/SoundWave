@@ -21,6 +21,7 @@ use playlists::Playlists;
 enum CurrentWindow{
     Files,
     Playlists,
+    Playlist,
     Queue
 }
 
@@ -64,11 +65,13 @@ impl Windows {
             CurrentWindow::Files => {self.get_file_manager_window(ui)},
             CurrentWindow::Queue => {self.get_queue_window(ui)}
             CurrentWindow::Playlists => {self.get_playlists_window(ui)}
+            _ => {}
         }
     }
 
     fn get_playlists_window(&mut self, ui: &mut egui::Ui){
-        self.playlists.get_adding_window(ui);
+        self.playlists.get_main_window(ui);
+
     }
 
     fn get_queue_window(&mut self, ui: &mut egui::Ui){
