@@ -1,6 +1,7 @@
 use std::env;
 use std::fs;
 
+use egui_extras::RetainedImage;
 
 pub struct PlayLs{
 
@@ -31,6 +32,20 @@ impl PlayLs{
         return ls
     }
 
+    pub fn get_cover(s: &String) -> Option<egui_extras::RetainedImage>{
+        return match fs::read(format!("./var/Covers/{0}", s)) {
+            Ok(a) => {
+                Option::Some(egui_extras::RetainedImage::from_image_bytes(
+                    s,
+                    &a)
+                    .unwrap())
+            }
+            Err(_) => {
+                return Option::None
+            }
+        }
+    }
+
     pub fn save_plsls(ls: &[Vec<String>; 2]){
         let mut data = String::new();
         let mut i = 0;
@@ -42,7 +57,9 @@ impl PlayLs{
     }
 
     pub fn add_pls(name: &String, descp: &String, cover: &String){
-        fs::copy(cover, format!("./var/{name}"));
+        if cover != &String::new(){
+            fs::copy(cover, format!("./var/{name}"));
+        }
         let mut ls = PlayLs::get_plsls();
         ls[0].push(String::from(name));
         ls[1].push(String::from(descp));

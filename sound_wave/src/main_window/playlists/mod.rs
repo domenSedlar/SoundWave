@@ -5,7 +5,10 @@ use playlists_backend::PlayLs;
 use add_playlist::PlaylistAdder;
 
 use egui::Response;
-use crate::main_window::playlists::PlaylistsState::Selected;
+use egui_extras::RetainedImage;
+
+use std::env;
+use std::fs;
 
 enum PlaylistsState {
     Details(String),
@@ -17,16 +20,25 @@ pub struct Playlists {
     adding: bool,
     selected: Option<String>,
     pub(crate) ls_of_playls: [Vec<String>; 2],
+    covers: Vec<Option<RetainedImage>>,
     playlist_adder: PlaylistAdder,
     state: PlaylistsState
 }
 
 impl Playlists{
     pub fn default() -> Playlists{
+        let a = PlayLs{};
+        let ls = PlayLs::get_plsls();
+        let mut cls = Vec::new();
+        for s in &ls[0]{
+            cls.push(PlayLs::get_cover(s));
+        }
+        println!("{:?}", cls.len());
         Playlists{
             adding: false,
             selected: None,
-            ls_of_playls: PlayLs::get_plsls(),
+            ls_of_playls: ls,
+            covers: cls,
             playlist_adder: PlaylistAdder::default([vec![], vec![]]),
             state: PlaylistsState::Default
         }
@@ -56,6 +68,9 @@ impl Playlists{
                             self.ls_of_playls = PlayLs::get_plsls();
                         }
                     }
+                if ui.button("cancel").clicked() {
+                    self.adding = false;
+                }
                 }
 
             false => {
@@ -73,14 +88,22 @@ impl Playlists{
     }
 
     pub fn get_playlist_panel(&mut self, ui: &mut egui::Ui, i: &usize){
-
         let r = ui.push_id(i, |ui| {
-            ui.label(&*self.ls_of_playls[0].get(*i).unwrap());
+            let nm = self.ls_of_playls[0].get(*i).unwrap();
+            match self.covers.get(*i).unwrap() {
+                Some(a) => {
+                    a.show_size(ui, egui::Vec2::new(100.0, 100.0));
+                }
+                None => {}
+            }
+
+
+            ui.label(nm);
         });
 
         let r = r.response.interact(egui::Sense::click());
         if r.clicked() {
-            self.state = Selected(String::from(self.ls_of_playls[0].get(*i).unwrap()));
+            self.state = PlaylistsState::Selected(String::from(self.ls_of_playls[0].get(*i).unwrap()));
         }
 
     }
