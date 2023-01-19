@@ -58,7 +58,7 @@ impl PlayLs{
 
     pub fn add_pls(name: &String, descp: &String, cover: &String){
         if cover != &String::new(){
-            fs::copy(cover, format!("./var/{name}"));
+            fs::copy(cover, format!("./var/Covers/{name}"));
         }
         let mut ls = PlayLs::get_plsls();
         ls[0].push(String::from(name));

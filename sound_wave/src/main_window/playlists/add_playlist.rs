@@ -38,7 +38,7 @@ impl PlaylistAdder{
                     ui.label("Name:");
                     ui.text_edit_singleline(&mut self.name_to_add);
 
-                    if self.ls_of_playls[0].contains(&self.name_to_add){
+                    if self.ls_of_playls[0].contains(&self.name_to_add) && self.name_to_add != String::new(){
                         ui.colored_label(Color32::RED,"name taken");
                     }
                 });

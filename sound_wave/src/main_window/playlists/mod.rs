@@ -33,7 +33,6 @@ impl Playlists{
         for s in &ls[0]{
             cls.push(PlayLs::get_cover(s));
         }
-        println!("{:?}", cls.len());
         Playlists{
             adding: false,
             selected: None,
@@ -66,6 +65,7 @@ impl Playlists{
                             self.adding = false;
                             self.playlist_adder = PlaylistAdder::default([vec![], vec![]]);
                             self.ls_of_playls = PlayLs::get_plsls();
+                            self.covers.push(PlayLs::get_cover(&a[0]));
                         }
                     }
                 if ui.button("cancel").clicked() {
