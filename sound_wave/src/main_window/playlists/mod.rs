@@ -11,7 +11,7 @@ use std::env;
 use std::fs;
 
 enum PlaylistsState {
-    Details(String),
+    Details(usize),
     Selected(String),
     Default
 }
@@ -41,6 +41,10 @@ impl Playlists{
             playlist_adder: PlaylistAdder::default([vec![], vec![]]),
             state: PlaylistsState::Default
         }
+    }
+
+    pub fn add(&self,pth: &String, plyls: &String){
+        PlayLs::add_song(pth ,plyls);
     }
 
     pub fn copy_vec(ls: &Vec<String>) -> Vec<String>{
@@ -83,28 +87,41 @@ impl Playlists{
         }
 
         for i in 0..self.ls_of_playls[0].len(){
+            ui.add_space(20.0);
+
             self.get_playlist_panel(ui, &i);
         }
     }
 
     pub fn get_playlist_panel(&mut self, ui: &mut egui::Ui, i: &usize){
+        let nm = self.ls_of_playls[0].get(*i).unwrap();
+
         let r = ui.push_id(i, |ui| {
-            let nm = self.ls_of_playls[0].get(*i).unwrap();
             match self.covers.get(*i).unwrap() {
                 Some(a) => {
                     a.show_size(ui, egui::Vec2::new(100.0, 100.0));
                 }
                 None => {}
             }
-
-
-            ui.label(nm);
         });
-
         let r = r.response.interact(egui::Sense::click());
-        if r.clicked() {
-            self.state = PlaylistsState::Selected(String::from(self.ls_of_playls[0].get(*i).unwrap()));
-        }
 
+        ui.horizontal(|a|{
+            if a.label(nm).clicked() || r.clicked(){
+                self.state = PlaylistsState::Selected(String::from(self.ls_of_playls[0].get(*i).unwrap()));
+
+            }
+            if a.button("...").clicked(){
+                self.state = PlaylistsState::Details(*i);
+            }
+        });
+        match self.state{
+            PlaylistsState::Details(u) => {
+                if &u == i{
+                    ui.label(self.ls_of_playls[1].get(*i).unwrap());
+                }
+            }
+            _ => {}
+        }
     }
 }

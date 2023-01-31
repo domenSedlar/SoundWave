@@ -64,6 +64,17 @@ impl PlayLs{
         ls[0].push(String::from(name));
         ls[1].push(String::from(descp));
 
+        fs::File::create(format!("./var/PlaylistDir/{name}"));
         PlayLs::save_plsls(&ls);
+
+    }
+
+    pub fn add_song(pth: &String, plyls: &String){
+        let ls = fs::read_to_string(format!("./var/PlaylistDir/{plyls}")).unwrap();
+        if ls.contains(&*pth){
+            return;
+        }
+        let ls = format!("{0}\r{1}", ls, &pth);
+        fs::write(format!("./var/PlaylistDir/{plyls}"), ls);
     }
 }

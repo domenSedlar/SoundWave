@@ -1,5 +1,5 @@
-use egui::Response;
-use egui::Color32;
+use eframe::glow::FALSE;
+use egui::{Color32, Response, menu, Button};
 use egui_extras::{Size, StripBuilder};
 
 pub struct Song {
@@ -7,7 +7,7 @@ pub struct Song {
     pub(crate) name: String,
     pub(crate) artist: String,
     pub(crate) album: String,
-    pub(crate) year: String
+    pub(crate) year: String,
 }
 
 impl Song{
@@ -17,11 +17,11 @@ impl Song{
             name: String::new(),
             artist: String::new(),
             album: String::new(),
-            year: String::new()
+            year: String::new(),
         }
     }
 
-    pub fn find(path: &str, ls: &mut Vec<Song>) -> usize{
+    pub fn find(path: &str, ls: &Vec<Song>) -> usize{
         for i in 0..ls.len(){
             if &(ls.get(i).unwrap().path) == path{
                 return i;
@@ -37,7 +37,7 @@ impl Song{
             name: String::from(&s.name),
             artist: String::from(&s.artist),
             album: String::from(&s.album),
-            year: String::from(&s.year)
+            year: String::from(&s.year),
         }
     }
 
@@ -83,24 +83,11 @@ impl Song{
             name: String::from(&vars[1]),
             artist: String::from(&vars[2]),
             album: String::from(&vars[3]),
-            year: String::from(&vars[4])
+            year: String::from(&vars[4]),
         }
     }
 
-    pub fn get_panel(&self, ui: &mut egui::Ui) {
-
-        ui.label("LARGE\nIMAGE\nGOES\nHERE");
-        egui::Grid::new(&self.path).show(ui, |ui| {
-            ui.label(&self.name);
-            ui.end_row();
-            ui.label(&self.artist);
-            ui.end_row();
-        });
-        ui.label(&self.album);
-
-    }
-
-    pub fn get_panel2(&self, ui: &mut egui::Ui, row: &usize, playing: bool) -> Response {
+    pub fn get_panel(&self, ui: &mut egui::Ui, row: &usize, playing: bool) -> (Response, bool) {
 
         let dark_mode = ui.visuals().dark_mode;
         let faded_color = ui.visuals().window_fill();
@@ -109,39 +96,41 @@ impl Song{
             let t = if dark_mode { 0.95 } else { 0.8 };
             egui::lerp(Rgba::from(color)..=Rgba::from(faded_color), t).into()
         };
-
-            let r = ui.push_id(row, |ui| {
-                ui.horizontal(|a| {
-                        StripBuilder::new(a)
-                            .size(Size::exact(60.0))
-                            .size(Size::remainder())
-                            .size(Size::exact(5.0))
-                            .vertical(|mut strip| {
-                                strip.cell(|ui| {
-                                    if playing{
-                                        ui.painter().rect_filled(
-                                            ui.available_rect_before_wrap(),
-                                            0.0,
-                                            faded_color(Color32::BLUE),
-                                        );
-                                    }
-                                    ui.label("LARGE\nIMAGE\nGOES\nHERE");
-                                    egui::Grid::new(&self.path).show(ui, |a| {
-                                        a.label(&self.name);
-                                        a.end_row();
-                                        a.label(&self.artist);
-                                        a.end_row();
-                                    });
-                                    ui.label(&self.album);
-
-                                });
+        let mut c = false;
+        let r = ui.push_id(row, |ui| {
+            ui.horizontal(|a| {
+                StripBuilder::new(a)
+                    .size(Size::exact(60.0))
+                    .size(Size::remainder())
+                    .size(Size::exact(5.0))
+                    .vertical(|mut strip| {
+                        strip.cell(|ui| {
+                            if playing{
+                                ui.painter().rect_filled(
+                                    ui.available_rect_before_wrap(),
+                                    0.0,
+                                    faded_color(Color32::BLUE),
+                                );
+                            }
+                            ui.label("LARGE\nIMAGE\nGOES\nHERE");
+                            egui::Grid::new(&self.path).show(ui, |a| {
+                                a.label(&self.name);
+                                a.end_row();
+                                a.label(&self.artist);
+                                a.end_row();
                             });
+                            ui.label(&self.album);
+                            if ui.button("...").clicked(){
+                                c = true;
+                            }
+                        });
+                    });
 
-
-                });        });
+            });
+        });
 
         let r = r.response.interact(egui::Sense::click());
-        return r
+        return (r, c)
 
     }
 }

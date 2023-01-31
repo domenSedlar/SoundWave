@@ -18,6 +18,12 @@ use controller::Controller;
 use playlists::Playlists;
 
 
+enum MrCtx{
+    No,
+    First(String),
+    Add(String)
+}
+
 enum CurrentWindow{
     Files,
     Playlists,
@@ -29,8 +35,8 @@ pub struct Windows {
     file_manager: FileManager,
     controller: Controller,
     playlists: Playlists,
-
-    current_window: CurrentWindow
+    current_window: CurrentWindow,
+    more: MrCtx
 }
 
 impl Windows {
@@ -39,7 +45,8 @@ impl Windows {
             file_manager: FileManager::default(),
             controller: Controller::default(),
             playlists: Playlists::default(),
-            current_window: CurrentWindow::Files
+            current_window: CurrentWindow::Files,
+            more: MrCtx::No
         }
     }
     pub fn get_tabs_window(&mut self, ui: &mut egui::Ui){
@@ -74,6 +81,38 @@ impl Windows {
 
     }
 
+    fn get_adding_menu(&mut self, ui: &mut egui::Ui){
+        menu::bar(ui, |a| {
+            for i in &self.playlists.ls_of_playls[0]{
+                if a.button(i).clicked(){
+                    &self.playlists.add(&file_manager::fm_backend::tag_reader::read_to_str(&match &self.more{
+                        MrCtx::No => {String::new()}
+                        MrCtx::First(a) => {a.to_string()}
+                        MrCtx::Add(b) => {b.to_string()}
+                    }) , i );
+                }
+            }
+            if a.button("X").clicked(){
+                self.more = MrCtx::No;
+            }
+        });
+    }
+
+    fn get_ctx_menu(&mut self, ui: &mut egui::Ui){
+        menu::bar(ui, |a| {
+            if a.button("+ Playlist").clicked() {
+                self.more = MrCtx::Add(match &self.more{
+                    MrCtx::No => {String::new()}
+                    MrCtx::First(a) => {a.to_string()}
+                    MrCtx::Add(b) => {b.to_string()}
+                })
+            }
+            if a.button("X").clicked(){
+                self.more = MrCtx::No;
+            }
+        });
+    }
+
     fn get_queue_window(&mut self, ui: &mut egui::Ui){
         let text_style = TextStyle::Body;
         let row_height = ui.text_style_height(&text_style);
@@ -93,11 +132,26 @@ impl Windows {
                             if text == " - "{
                                 text = file_manager::fm_backend::nm_from_path(&s.path);
                             }
-                            let r = &s.get_panel2(ui, &row, row== self.controller.index);
+                            let (r, m) = &s.get_panel(ui, &row, row== self.controller.index);
+                            if *m{
+                                self.more = MrCtx::First(String::from(&s.path))
+                            }
+                            match &self.more{
+                                MrCtx::No => {}
+                                MrCtx::First(p) => {
+                                    if p == &s.path{
+                                        self.get_ctx_menu(ui);
+                                    }
+                                }
+                                MrCtx::Add(p) => {
+                                    if p == &s.path{
+                                        self.get_adding_menu(ui);
+                                    }
+                                }
+                            }
                             if r.clicked(){
                                 self.controller.to(row);
                             }
-
                         }
                     };
 
@@ -206,12 +260,28 @@ impl Windows {
                                     if text == " - "{
                                         text = file_manager::fm_backend::nm_from_path(&s.path);
                                     }
-                                        let r = &s.get_panel2(ui, &row, curr_song == &s.path);
-                                        if r.clicked(){
-                                            let mut pls = Song::clone_ls(&self.file_manager.items.1);
-                                            let i: usize = Song::find(&s.path, &mut pls);
-                                            self.controller.play(pls, i);
+                                    let (r, m) = &s.get_panel(ui, &row, row == self.controller.index);
+                                    if *m{
+                                        self.more = MrCtx::First(String::from(&s.path))
+                                    }
+                                    if r.clicked(){
+                                        let mut pls = Song::clone_ls(&self.file_manager.items.1);
+                                        let i: usize = Song::find(&s.path, &mut pls);
+                                        self.controller.play(pls, i);
+                                    }
+                                    match &self.more{
+                                        MrCtx::No => {}
+                                        MrCtx::First(p) => {
+                                            if p == &s.path{
+                                                &self.get_ctx_menu(ui);
+                                            }
                                         }
+                                        MrCtx::Add(p) => {
+                                            if p == &s.path {
+                                                &self.get_adding_menu(ui);
+                                            }
+                                        }
+                                    }
 
                                 }
                             };

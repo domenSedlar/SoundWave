@@ -5,7 +5,7 @@ use std::fs;
 use std::env;
 
 use super::super::Song;
-mod tag_reader;
+pub mod tag_reader;
 
 fn abs_to_rel_path(abs: String, root: &String) -> String{
     let mut rel = abs.replace(root, "");
@@ -84,7 +84,7 @@ pub fn scan_folder(dir: &String, root: &String) -> (Vec<String>, Vec<String>){
         else {
             if (path.as_ref().unwrap().path().display().to_string()).ends_with(".mp3")
             {
-                song = tag_reader::read_to_str(path.unwrap().path().display().to_string());
+                song = tag_reader::read_to_str(&path.unwrap().path().display().to_string());
 
                 files.push(song);
             }

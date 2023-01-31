@@ -44,12 +44,11 @@ pub fn read_to_song(file: String) -> Song{
     return s
 }
 
-pub fn read_to_str(file: String) -> String{
+pub fn read_to_str(file: &String) -> String{
     let mut data = fs::read(&file).expect("Unable to read file");
-
     data.drain(0..(data.len() - 128));
 
-    let mut s = String::from(&file);
+    let mut s = String::from(file);
 
     if !(data[0] as char == 'T' && data[1] as char == 'A' && data[2] as char == 'G'){
         return s
@@ -86,6 +85,5 @@ pub fn read_to_str(file: String) -> String{
     s.push(';');
 
     s = s.replace('\0', "");
-
     return s
 }
