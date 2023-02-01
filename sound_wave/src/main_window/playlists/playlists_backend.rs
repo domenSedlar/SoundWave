@@ -1,5 +1,6 @@
 use std::env;
 use std::fs;
+use egui::TextBuffer;
 
 use egui_extras::RetainedImage;
 
@@ -99,5 +100,16 @@ impl PlayLs{
         }
         let ls = format!("{0}{1}\r", ls, &pth);
         fs::write(format!("./var/PlaylistDir/{plyls}"), ls);
+    }
+
+    pub fn rm_song(snm: &String, pnm: &String, sls: Vec<Song>){
+        let mut ls = String::new();
+        for i in sls{
+            let b = Song::serialize(i, ';');
+            if &b == snm { continue; }
+            ls =  format!("{0}{1}\r", ls, b);
+        }
+
+        fs::write(format!("./var/PlaylistDir/{pnm}"), ls);
     }
 }

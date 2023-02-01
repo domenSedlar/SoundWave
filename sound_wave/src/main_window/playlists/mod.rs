@@ -20,7 +20,7 @@ enum PlaylistsState {
 
 pub struct Playlists {
     adding: bool,
-    selected: Option<String>,
+    pub(crate) selected: Option<String>,
     pub(crate) ls_of_playls: [Vec<String>; 2],
     covers: Vec<Option<RetainedImage>>,
     playlist_adder: PlaylistAdder,
@@ -49,6 +49,17 @@ impl Playlists{
 
     pub fn add(&self,pth: &String, plyls: &String){
         PlayLs::add_song(pth ,plyls);
+    }
+
+    pub fn rm_song(&mut self, snm: &String){
+        PlayLs::rm_song(snm, &self.selected.as_ref().unwrap(), Song::clone_ls(&self.playlist));
+        let mut i = 0;
+        while i < self.ls_of_playls.len(){
+            if &self.ls_of_playls[0].get(i).unwrap() == &self.selected.as_ref().unwrap(){ break; }
+            i += 1;
+        }
+        self.playlist = PlayLs::get_ls(
+            self.ls_of_playls[0].get(i).unwrap());
     }
 
     pub fn copy_vec(ls: &Vec<String>) -> Vec<String>{
@@ -98,7 +109,7 @@ impl Playlists{
         //}
     }
 
-    pub fn get_playlist_panel(&mut self, ui: &mut egui::Ui, i: &usize) -> Response{
+    pub fn get_playlist_panel(&mut self, ui: &mut egui::Ui, i: &usize){
         let nm = self.ls_of_playls[0].get(*i).unwrap();
 
         let r = ui.push_id(i, |ui| {
@@ -113,7 +124,10 @@ impl Playlists{
 
         ui.horizontal(|a|{
             if a.label(nm).clicked() || r.clicked(){
-                self.state = PlaylistsState::Selected(String::from(self.ls_of_playls[0].get(*i).unwrap()));
+                self.selected = Some(String::from(self.ls_of_playls[0].get(*i).unwrap()));
+                self.playlist = PlayLs::get_ls(
+                    self.ls_of_playls[0].get(*i).unwrap());
+                println!("wow");
             }
             if a.button("...").clicked(){
                 self.state = PlaylistsState::Details(*i);
@@ -127,6 +141,6 @@ impl Playlists{
             }
             _ => {}
         }
-        r
+
     }
 }

@@ -55,6 +55,7 @@ impl Windows {
         }
         if ui.button("Playlists").clicked(){
             self.current_window = CurrentWindow::Playlists;
+            self.playlists.selected = None;
         }
     }
 
@@ -68,10 +69,16 @@ impl Windows {
     }
 
     pub fn get_main_window(&mut self, ui: &mut egui::Ui){
-        match self.current_window{
+        match &self.current_window{
             CurrentWindow::Files => {self.get_file_manager_window(ui)},
             CurrentWindow::Queue => {self.get_queue_window(ui)},
-            CurrentWindow::Playlists => {self.get_playlists_window(ui)},
+            CurrentWindow::Playlists => {
+                match &self.playlists.selected{
+                    None => {self.get_playlists_window(ui)}
+                    Some(a) => {self.get_playlist_window(ui)}
+                }
+
+            },
             CurrentWindow::Playlist => {self.get_playlist_window(ui)},
             _ => {}
         }
@@ -79,7 +86,16 @@ impl Windows {
 
     fn get_playlist_ctx(&mut self, ui: &mut egui::Ui){
         menu::bar(ui, |a| {
-            if a.button("- Playlist").clicked() {
+            if a.button("-").clicked(){
+                &self.playlists.rm_song(
+                    &file_manager::fm_backend::tag_reader::read_to_str(&match &self.more{
+                    MrCtx::No => {String::new()}
+                    MrCtx::First(a) => {a.to_string()}
+                    MrCtx::Add(b) => {b.to_string()}
+                }));
+                self.more = MrCtx::No;
+            }
+            if a.button("+ Playlist").clicked() {
                 self.more = MrCtx::Add(match &self.more{
                     MrCtx::No => {String::new()}
                     MrCtx::First(a) => {a.to_string()}
@@ -153,11 +169,7 @@ impl Windows {
         for i in 0..self.playlists.ls_of_playls[0].len(){
             ui.add_space(20.0);
 
-            if self.playlists.get_playlist_panel(ui, &i).clicked(){
-                self.current_window = CurrentWindow::Playlist;
-                self.playlists.playlist = playlists::playlists_backend::PlayLs::get_ls(
-                    self.playlists.ls_of_playls[0].get(i).unwrap())
-            }
+            self.playlists.get_playlist_panel(ui, &i);
         }
     }
 
@@ -170,6 +182,7 @@ impl Windows {
                         MrCtx::First(a) => {a.to_string()}
                         MrCtx::Add(b) => {b.to_string()}
                     }) , i );
+                    self.more = MrCtx::No;
                 }
             }
             if a.button("X").clicked(){
