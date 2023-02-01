@@ -70,15 +70,95 @@ impl Windows {
     pub fn get_main_window(&mut self, ui: &mut egui::Ui){
         match self.current_window{
             CurrentWindow::Files => {self.get_file_manager_window(ui)},
-            CurrentWindow::Queue => {self.get_queue_window(ui)}
-            CurrentWindow::Playlists => {self.get_playlists_window(ui)}
+            CurrentWindow::Queue => {self.get_queue_window(ui)},
+            CurrentWindow::Playlists => {self.get_playlists_window(ui)},
+            CurrentWindow::Playlist => {self.get_playlist_window(ui)},
             _ => {}
         }
+    }
+
+    fn get_playlist_ctx(&mut self, ui: &mut egui::Ui){
+        menu::bar(ui, |a| {
+            if a.button("- Playlist").clicked() {
+                self.more = MrCtx::Add(match &self.more{
+                    MrCtx::No => {String::new()}
+                    MrCtx::First(a) => {a.to_string()}
+                    MrCtx::Add(b) => {b.to_string()}
+                })
+            }
+            if a.button("X").clicked(){
+                self.more = MrCtx::No;
+            }
+        });
+    }
+
+    fn get_playlist_window(&mut self, ui: &mut egui::Ui){
+        let ls = Song::clone_ls(&self.playlists.playlist);
+
+        let text_style = TextStyle::Body;
+        let row_height = ui.text_style_height(&text_style);
+        let num_rows = ls.len();
+
+        ScrollArea::vertical().auto_shrink([false; 2]).show_rows(
+            ui,
+            row_height,
+            num_rows,
+            |mut ui, row_range| {
+                for row in row_range {
+                    match ls.get(row){
+                        None => {}
+                        Some(s) => {
+                            let mut text = format!("{0} - {1}", s.artist, s.name);
+
+                            if text == " - "{
+                                text = file_manager::fm_backend::nm_from_path(&s.path);
+                            }
+                            let (r, m) = &s.get_panel(ui, &row,
+                                                      s.path ==
+                                                          match &self.controller.list.get(self.controller.index){
+                                                              None => {String::new()}
+                                                              Some(a) => {String::from(&a.path)}
+                                                          }
+                            );
+                            if *m{
+                                self.more = MrCtx::First(String::from(&s.path))
+                            }
+                            match &self.more{
+                                MrCtx::No => {}
+                                MrCtx::First(p) => {
+                                    if p == &s.path{
+                                        self.get_playlist_ctx(ui);
+                                    }
+                                }
+                                MrCtx::Add(p) => {
+                                    if p == &s.path{
+                                        self.get_adding_menu(ui);
+                                    }
+                                }
+                            }
+                            if r.clicked(){
+                                self.controller.play(Song::clone_ls(&self.playlists.playlist), row);
+                            }
+                        }
+                    };
+
+                }
+            },
+        );
     }
 
     fn get_playlists_window(&mut self, ui: &mut egui::Ui){
         self.playlists.get_main_window(ui);
 
+        for i in 0..self.playlists.ls_of_playls[0].len(){
+            ui.add_space(20.0);
+
+            if self.playlists.get_playlist_panel(ui, &i).clicked(){
+                self.current_window = CurrentWindow::Playlist;
+                self.playlists.playlist = playlists::playlists_backend::PlayLs::get_ls(
+                    self.playlists.ls_of_playls[0].get(i).unwrap())
+            }
+        }
     }
 
     fn get_adding_menu(&mut self, ui: &mut egui::Ui){

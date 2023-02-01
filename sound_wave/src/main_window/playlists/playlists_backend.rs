@@ -3,6 +3,8 @@ use std::fs;
 
 use egui_extras::RetainedImage;
 
+use super::super::Song;
+
 pub struct PlayLs{
 
 }
@@ -69,12 +71,33 @@ impl PlayLs{
 
     }
 
+    pub fn get_ls(pth: &String) -> Vec<Song>{
+        let mut sls: Vec<Song> = vec![];
+        let ls: Vec<String> = {
+            let mut b = vec![];
+            for i in fs::read_to_string(format!("./var/PlaylistDir/{pth}"))
+                .unwrap().split('\r').collect::<Vec<&str>>(){
+                b.push(i.to_string());
+            }
+            b
+        };
+
+        for s in ls{
+            if s == String::new(){
+                continue;
+            }
+           sls.push(Song::deserialize(s.to_string(), ';'));
+        }
+
+        sls
+    }
+
     pub fn add_song(pth: &String, plyls: &String){
         let ls = fs::read_to_string(format!("./var/PlaylistDir/{plyls}")).unwrap();
         if ls.contains(&*pth){
             return;
         }
-        let ls = format!("{0}\r{1}", ls, &pth);
+        let ls = format!("{0}{1}\r", ls, &pth);
         fs::write(format!("./var/PlaylistDir/{plyls}"), ls);
     }
 }

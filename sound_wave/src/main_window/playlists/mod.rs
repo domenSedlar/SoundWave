@@ -1,5 +1,5 @@
 mod add_playlist;
-mod playlists_backend;
+pub mod playlists_backend;
 
 use playlists_backend::PlayLs;
 use add_playlist::PlaylistAdder;
@@ -9,6 +9,8 @@ use egui_extras::RetainedImage;
 
 use std::env;
 use std::fs;
+
+use super::Song;
 
 enum PlaylistsState {
     Details(usize),
@@ -22,7 +24,8 @@ pub struct Playlists {
     pub(crate) ls_of_playls: [Vec<String>; 2],
     covers: Vec<Option<RetainedImage>>,
     playlist_adder: PlaylistAdder,
-    state: PlaylistsState
+    state: PlaylistsState,
+    pub(crate) playlist: Vec<Song>
 }
 
 impl Playlists{
@@ -39,7 +42,8 @@ impl Playlists{
             ls_of_playls: ls,
             covers: cls,
             playlist_adder: PlaylistAdder::default([vec![], vec![]]),
-            state: PlaylistsState::Default
+            state: PlaylistsState::Default,
+            playlist: vec![]
         }
     }
 
@@ -60,6 +64,7 @@ impl Playlists{
     }
 
     pub fn get_main_window(&mut self, ui: &mut egui::Ui){
+        ///adding
         match self.adding{
             true => {
                     match self.playlist_adder.get_adding_window(ui){
@@ -85,15 +90,15 @@ impl Playlists{
             }
             _ => {}
         }
+        //panel
+        //for i in 0..self.ls_of_playls[0].len(){
+         //   ui.add_space(20.0);
 
-        for i in 0..self.ls_of_playls[0].len(){
-            ui.add_space(20.0);
-
-            self.get_playlist_panel(ui, &i);
-        }
+          //  self.get_playlist_panel(ui, &i);
+        //}
     }
 
-    pub fn get_playlist_panel(&mut self, ui: &mut egui::Ui, i: &usize){
+    pub fn get_playlist_panel(&mut self, ui: &mut egui::Ui, i: &usize) -> Response{
         let nm = self.ls_of_playls[0].get(*i).unwrap();
 
         let r = ui.push_id(i, |ui| {
@@ -109,7 +114,6 @@ impl Playlists{
         ui.horizontal(|a|{
             if a.label(nm).clicked() || r.clicked(){
                 self.state = PlaylistsState::Selected(String::from(self.ls_of_playls[0].get(*i).unwrap()));
-
             }
             if a.button("...").clicked(){
                 self.state = PlaylistsState::Details(*i);
@@ -123,5 +127,6 @@ impl Playlists{
             }
             _ => {}
         }
+        r
     }
 }
