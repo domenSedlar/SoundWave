@@ -68,12 +68,10 @@ impl eframe::App for MyApp {
                 .resizable(true)
                 .min_height(32.0)
                 .show_inside(ui, |ui| {
-                    egui::ScrollArea::vertical().show(ui, |ui| {
                         ui.vertical_centered(|ui| {
                             ui.heading("Top Panel");
                         });
-                        main_window::lorem_ipsum(ui);
-                    });
+                    self.w.get_top_window(ui);
                 });
 
             egui::CentralPanel::default().show_inside(ui, |ui| {

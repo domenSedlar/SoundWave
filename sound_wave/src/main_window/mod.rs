@@ -24,6 +24,7 @@ enum MrCtx{
     Add(String)
 }
 
+#[derive(PartialEq)]
 enum CurrentWindow{
     Files,
     Playlists,
@@ -56,6 +57,98 @@ impl Windows {
         if ui.button("Playlists").clicked(){
             self.current_window = CurrentWindow::Playlists;
             self.playlists.selected = None;
+        }
+    }
+
+    pub fn get_top_window(&mut self, ui: &mut egui::Ui){
+        if ui.button("+").clicked(){
+            let ls: &Vec<Song>;
+
+            if self.current_window == CurrentWindow::Files{
+                ls = &self.file_manager.items.1;
+
+                for s in ls {
+                    if {
+                        let mut b = true;
+                        for i in &self.controller.list{
+                            if s.name == i.name && s.artist == i.artist && s.album == i.album{
+                                b = false;
+                                break;
+                            }
+                        }
+                        b
+                    }
+                    {
+                        self.controller.list.push(Song::clone(s));
+                    }
+                }
+            }
+            else if self.current_window == CurrentWindow::Playlists{
+                ls = &self.playlists.playlist;
+                for s in ls{
+                    if {
+                        let mut b = true;
+                        for i in &self.controller.list{
+                            if s.name == i.name && s.artist == i.artist && s.album == i.album{
+                                b = false;
+                                break;
+                            }
+                        }
+                        b
+                    }
+                    {
+                    self.controller.list.push(Song::clone(s));
+                    }
+                }
+            }
+        }
+
+        if ui.button("++").clicked(){
+            let ls: &Vec<Song>;
+
+            if self.current_window == CurrentWindow::Files{
+                ls = &self.file_manager.items.1;
+
+                for s in ls{
+                    self.controller.list.push(Song::clone(s));
+                }
+            }
+            else if self.current_window == CurrentWindow::Playlists{
+                ls = &self.playlists.playlist;
+                for s in ls{
+                    self.controller.list.push(Song::clone(s));
+                }
+            }
+        }
+
+        if ui.button("-").clicked(){
+            let ls: &Vec<Song>;
+
+            if self.current_window == CurrentWindow::Files{
+                ls = &self.file_manager.items.1;
+
+                for s in ls{
+                    let mut j = 0;
+                    for i in Song::clone_ls(&self.controller.list){
+                        if s.name == i.name && s.artist == i.artist && s.album == i.album{
+                            self.controller.list.remove(j);
+                        }
+                        j += 1;
+                    }
+                }
+            }
+            else if self.current_window == CurrentWindow::Playlists{
+                ls = &self.playlists.playlist;
+                for s in ls{
+                    let mut j = 0;
+                    for i in Song::clone_ls(&self.controller.list){
+                        if s.name == i.name && s.artist == i.artist && s.album == i.album{
+                            self.controller.list.remove(j);
+                        }
+                        j += 1;
+                    }
+                }
+            }
         }
     }
 
