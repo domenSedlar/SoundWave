@@ -133,4 +133,72 @@ impl Song{
         return (r, c)
 
     }
+
+    pub fn first_alphabeticly(word1: &str, word2: &str) -> bool{
+        let mut i = 0;
+
+        while i< word1.len() && i < word2.len(){
+            if (word1.chars().nth(i).unwrap() as u32) < (word2.chars().nth(i).unwrap() as u32){
+                return true;
+            }
+            if (word1.chars().nth(i).unwrap() as u32) > (word2.chars().nth(i).unwrap() as u32){
+                return false;
+            }
+            i += 1;
+        }
+
+        return true;
+    }
+
+    pub fn sort_by_name(ls:&mut Vec<Song>) -> &mut Vec<Song>{
+        let pivot = Song::clone(ls.get(ls.len()-1).unwrap());
+        let mut smaller = 0;
+        let mut i = 0;
+        while i<ls.len(){
+            if Song::first_alphabeticly(&(ls.get(i).unwrap().name),&pivot.name){
+                smaller+=1;
+                if Song::first_alphabeticly(&(ls.get(smaller).unwrap().name),&(ls.get(i).unwrap().name)){
+                    ls.swap(i,smaller);
+                }
+            }
+            i += 1;
+        }
+        ls.swap(smaller, i-1);
+        ls
+    }
+
+    pub fn sort_by_artist(ls:&mut Vec<Song>) -> &mut Vec<Song>{
+        let pivot = Song::clone(ls.get(ls.len()-1).unwrap());
+        let mut smaller = 0;
+        let mut i = 0;
+        while i<ls.len(){
+            if Song::first_alphabeticly(&(ls.get(i).unwrap().artist),&pivot.artist){
+                smaller+=1;
+                if Song::first_alphabeticly(&(ls.get(smaller).unwrap().artist),&(ls.get(i).unwrap().artist)){
+                    ls.swap(i,smaller);
+                }
+            }
+            i += 1;
+        }
+        ls.swap(smaller, i-1);
+        ls
+    }
+
+    pub fn sort_by_album(ls:&mut Vec<Song>) -> &mut Vec<Song>{
+        let pivot = Song::clone(ls.get(ls.len()-1).unwrap());
+        let mut smaller = 0;
+        let mut i = 0;
+        while i<ls.len(){
+            if Song::first_alphabeticly(&(ls.get(i).unwrap().album),&pivot.album){
+                smaller+=1;
+                if Song::first_alphabeticly(&(ls.get(smaller).unwrap().album),&(ls.get(i).unwrap().album)){
+                    ls.swap(i,smaller);
+                }
+            }
+            i += 1;
+        }
+        ls.swap(smaller, i-1);
+        ls
+    }
+
 }
