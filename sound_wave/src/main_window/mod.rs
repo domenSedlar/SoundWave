@@ -61,95 +61,97 @@ impl Windows {
     }
 
     pub fn get_top_window(&mut self, ui: &mut egui::Ui){
-        if ui.button("+").clicked(){
-            let ls: &Vec<Song>;
+        ui.horizontal(|u|{
+            if u.button("+").clicked(){
+                let ls: &Vec<Song>;
 
-            if self.current_window == CurrentWindow::Files{
-                ls = &self.file_manager.items.1;
+                if self.current_window == CurrentWindow::Files{
+                    ls = &self.file_manager.items.1;
 
-                for s in ls {
-                    if {
-                        let mut b = true;
-                        for i in &self.controller.list{
-                            if s.name == i.name && s.artist == i.artist && s.album == i.album{
-                                b = false;
-                                break;
+                    for s in ls {
+                        if {
+                            let mut b = true;
+                            for i in &self.controller.list{
+                                if s.name == i.name && s.artist == i.artist && s.album == i.album{
+                                    b = false;
+                                    break;
+                                }
                             }
+                            b
                         }
-                        b
+                        {
+                            self.controller.list.push(Song::clone(s));
+                        }
                     }
-                    {
+                }
+                else if self.current_window == CurrentWindow::Playlists{
+                    ls = &self.playlists.playlist;
+                    for s in ls{
+                        if {
+                            let mut b = true;
+                            for i in &self.controller.list{
+                                if s.name == i.name && s.artist == i.artist && s.album == i.album{
+                                    b = false;
+                                    break;
+                                }
+                            }
+                            b
+                        }
+                        {
+                        self.controller.list.push(Song::clone(s));
+                        }
+                    }
+                }
+            }
+
+            if u.button("++").clicked(){
+                let ls: &Vec<Song>;
+
+                if self.current_window == CurrentWindow::Files{
+                    ls = &self.file_manager.items.1;
+
+                    for s in ls{
+                        self.controller.list.push(Song::clone(s));
+                    }
+                }
+                else if self.current_window == CurrentWindow::Playlists{
+                    ls = &self.playlists.playlist;
+                    for s in ls{
                         self.controller.list.push(Song::clone(s));
                     }
                 }
             }
-            else if self.current_window == CurrentWindow::Playlists{
-                ls = &self.playlists.playlist;
-                for s in ls{
-                    if {
-                        let mut b = true;
-                        for i in &self.controller.list{
+
+            if u.button("-").clicked(){
+                let ls: &Vec<Song>;
+
+                if self.current_window == CurrentWindow::Files{
+                    ls = &self.file_manager.items.1;
+
+                    for s in ls{
+                        let mut j = 0;
+                        for i in Song::clone_ls(&self.controller.list){
                             if s.name == i.name && s.artist == i.artist && s.album == i.album{
-                                b = false;
-                                break;
+                                self.controller.list.remove(j);
                             }
+                            j += 1;
                         }
-                        b
-                    }
-                    {
-                    self.controller.list.push(Song::clone(s));
                     }
                 }
-            }
-        }
-
-        if ui.button("++").clicked(){
-            let ls: &Vec<Song>;
-
-            if self.current_window == CurrentWindow::Files{
-                ls = &self.file_manager.items.1;
-
-                for s in ls{
-                    self.controller.list.push(Song::clone(s));
-                }
-            }
-            else if self.current_window == CurrentWindow::Playlists{
-                ls = &self.playlists.playlist;
-                for s in ls{
-                    self.controller.list.push(Song::clone(s));
-                }
-            }
-        }
-
-        if ui.button("-").clicked(){
-            let ls: &Vec<Song>;
-
-            if self.current_window == CurrentWindow::Files{
-                ls = &self.file_manager.items.1;
-
-                for s in ls{
-                    let mut j = 0;
-                    for i in Song::clone_ls(&self.controller.list){
-                        if s.name == i.name && s.artist == i.artist && s.album == i.album{
-                            self.controller.list.remove(j);
+                else if self.current_window == CurrentWindow::Playlists{
+                    ls = &self.playlists.playlist;
+                    for s in ls{
+                        let mut j = 0;
+                        for i in Song::clone_ls(&self.controller.list){
+                            if s.name == i.name && s.artist == i.artist && s.album == i.album{
+                                self.controller.list.remove(j);
+                            }
+                            j += 1;
                         }
-                        j += 1;
                     }
                 }
             }
-            else if self.current_window == CurrentWindow::Playlists{
-                ls = &self.playlists.playlist;
-                for s in ls{
-                    let mut j = 0;
-                    for i in Song::clone_ls(&self.controller.list){
-                        if s.name == i.name && s.artist == i.artist && s.album == i.album{
-                            self.controller.list.remove(j);
-                        }
-                        j += 1;
-                    }
-                }
-            }
-        }
+        });
     }
 
     pub fn get_controller(&mut self, ui: &mut egui::Ui) {
