@@ -10,6 +10,8 @@ use egui::Ui;
 use egui::Vec2;
 use single_value_channel::channel_starting_with;
 
+use rand::Rng;
+
 mod play_backend;
 use play_backend::start;
 use super::Song;
@@ -104,6 +106,19 @@ impl Controller {
         if self.position == 100 {
             self.next();
         }
+    }
+
+    fn true_shuffle(mut ols: Vec<Song>) -> Vec<Song>{
+        let mut ls = vec![];
+
+        while ols.len() > 0 {
+            ls.push(ols.remove(rand::thread_rng().gen_range(0..ols.len())));
+        }
+        ls
+    }
+
+    pub fn play_true_shuffle(&mut self, pls: &Vec<Song>){
+        self.play(Controller::true_shuffle(Song::clone_ls(pls)),0);
     }
 }
 

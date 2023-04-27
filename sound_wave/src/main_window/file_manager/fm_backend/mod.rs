@@ -180,11 +180,9 @@ fn sort(mut ls: Vec<String>)->Vec<String>{
     let mut current_index = 0;
     let mut swap_marker: i32 = -1;
     let pivot = String::from(ls.get(ls.len()-1).unwrap());
-    println!("sorting");
     while current_index < ls.len(){
         if first_alphabeticly(&ls.get(current_index).unwrap(), &pivot){
             swap_marker += 1;
-            println!("{0}{1}",ls.len(), swap_marker);
             if first_alphabeticly(&ls.get(current_index).unwrap(), &ls.get(swap_marker as usize).unwrap()){
                 ls.swap(current_index, swap_marker as usize);
             }

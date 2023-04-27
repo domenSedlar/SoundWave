@@ -11,12 +11,19 @@ mod controller;
 mod file_manager;
 mod song;
 mod playlists;
+mod covers;
 
 use song::Song;
 use file_manager::FileManager;
 use controller::Controller;
 use playlists::Playlists;
+use crate::main_window::covers::AlbumCovers;
 
+enum SortBy{
+    Name,
+    Artist,
+    Album
+}
 
 enum MrCtx{
     No,
@@ -29,15 +36,19 @@ enum CurrentWindow{
     Files,
     Playlists,
     Playlist,
-    Queue
+    Queue,
+    AddingCovers
 }
 
 pub struct Windows {
     file_manager: FileManager,
     controller: Controller,
     playlists: Playlists,
+    cover_adder: AlbumCovers,
     current_window: CurrentWindow,
-    more: MrCtx
+    more: MrCtx,
+    sort_options: bool,
+    sorting_by: SortBy
 }
 
 impl Windows {
@@ -46,8 +57,11 @@ impl Windows {
             file_manager: FileManager::default(),
             controller: Controller::default(),
             playlists: Playlists::default(),
+            cover_adder: AlbumCovers::default(),
             current_window: CurrentWindow::Files,
-            more: MrCtx::No
+            more: MrCtx::No,
+            sort_options: false,
+            sorting_by: SortBy::Name
         }
     }
     pub fn get_tabs_window(&mut self, ui: &mut egui::Ui){
@@ -58,10 +72,35 @@ impl Windows {
             self.current_window = CurrentWindow::Playlists;
             self.playlists.selected = None;
         }
+        if ui.button("Album Covers").clicked(){
+            self.current_window = CurrentWindow::AddingCovers;
+        }
     }
 
     pub fn get_top_window(&mut self, ui: &mut egui::Ui){
+        if self.sort_options{
+            ui.horizontal(|u |{
+                u.label("Sort by: ");
+                if u.button("Title").clicked(){
+                    self.sorting_by = SortBy::Name;
+                    self.sort_options = false;
+                    self.change_sorting();
+                }
+                if u.button("Artist").clicked(){
+                    self.sorting_by = SortBy::Artist;
+                    self.sort_options = false;
+                    self.change_sorting();
+                }
+                if u.button("Album").clicked(){
+                    self.sorting_by = SortBy::Album;
+                    self.sort_options = false;
+                    self.change_sorting();
+                }
+            });
+            return
+        }
         ui.horizontal(|u|{
+
             if u.button("+").clicked(){
                 let ls: &Vec<Song>;
 
@@ -151,6 +190,25 @@ impl Windows {
                     }
                 }
             }
+            if u.button("Sort by").clicked(){
+                self.sort_options = true;
+            }
+            if u.button("|>").clicked(){
+                match &self.current_window {
+                    CurrentWindow::Files => {self.controller.play(Song::clone_ls(&self.file_manager.items.1), 0)}
+                    CurrentWindow::Playlists => {self.controller.play(Song::clone_ls(&self.playlists.playlist), 0)}
+                    CurrentWindow::Playlist => {self.controller.play(Song::clone_ls(&self.playlists.playlist), 0)}
+                    _ => {}
+                }
+            }
+            if u.button("Shuffle Play").clicked() {
+                match &self.current_window {
+                    CurrentWindow::Files => { self.controller.play_true_shuffle(&self.file_manager.items.1) }
+                    CurrentWindow::Playlists => { self.controller.play_true_shuffle(&self.playlists.playlist) }
+                    CurrentWindow::Playlist => { self.controller.play_true_shuffle(&self.playlists.playlist) }
+                    _ => {}
+                }
+            }
         });
     }
 
@@ -175,6 +233,7 @@ impl Windows {
 
             },
             CurrentWindow::Playlist => {self.get_playlist_window(ui)},
+            CurrentWindow::AddingCovers => {self.cover_adder.get_adding_window(ui)}
             _ => {}
         }
     }
@@ -224,13 +283,12 @@ impl Windows {
                             if text == " - "{
                                 text = file_manager::fm_backend::nm_from_path(&s.path);
                             }
-                            let (r, m) = &s.get_panel(ui, &row,
-                                                      s.path ==
-                                                          match &self.controller.list.get(self.controller.index){
-                                                              None => {String::new()}
-                                                              Some(a) => {String::from(&a.path)}
-                                                          }
-                            );
+                            let (r, m) = &s.get_panel(ui, &row,{
+                                match self.controller.list.get(self.controller.index) {
+                                    None => {false}
+                                    Some(b) => {s.same_song(b) }
+                                }
+                            });
                             if *m{
                                 self.more = MrCtx::First(String::from(&s.path))
                             }
@@ -410,6 +468,7 @@ impl Windows {
             ///Showing subfolders
             if self.file_manager.current_location != self.file_manager.shown_location{
                 self.file_manager.items = file_manager::fm_backend::ls_all_in_dir(&self.file_manager.current_location);
+                self.file_manager.items.1 = Song::sort_by_names(Song::clone_ls(&self.file_manager.items.1));
                 self.file_manager.shown_location = String::from(&self.file_manager.current_location);
             }
 
@@ -448,7 +507,12 @@ impl Windows {
                                     if text == " - "{
                                         text = file_manager::fm_backend::nm_from_path(&s.path);
                                     }
-                                    let (r, m) = &s.get_panel(ui, &row, row == self.controller.index);
+                                    let (r, m) = &s.get_panel(ui, &row,{
+                                        match self.controller.list.get(self.controller.index) {
+                                            None => {false}
+                                            Some(b) => {s.same_song(b) }
+                                        }
+                                    });
                                     if *m{
                                         self.more = MrCtx::First(String::from(&s.path))
                                     }
@@ -481,6 +545,23 @@ impl Windows {
         }
     }
 
+    fn change_sorting(&mut self){
+        match &self.sorting_by {
+            SortBy::Name => {
+                self.file_manager.items.1 = Song::sort_by_names(Song::clone_ls(&self.file_manager.items.1));
+                self.playlists.playlist = Song::sort_by_names(Song::clone_ls(&self.playlists.playlist));
+            }
+            SortBy::Artist => {
+                self.file_manager.items.1 = Song::sort_by_artists(Song::clone_ls(&self.file_manager.items.1));
+                self.playlists.playlist = Song::sort_by_artists(Song::clone_ls(&self.playlists.playlist));
+            }
+            SortBy::Album => {
+                self.file_manager.items.1 = Song::sort_by_albums(Song::clone_ls(&self.file_manager.items.1));
+                self.playlists.playlist = Song::sort_by_albums(Song::clone_ls(&self.playlists.playlist));
+            }
+        }
+
+    }
 }
 
 fn scroll_area_template(ui: &mut egui::Ui) {

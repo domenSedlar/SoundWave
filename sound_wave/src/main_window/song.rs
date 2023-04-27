@@ -1,6 +1,7 @@
 use eframe::glow::FALSE;
 use egui::{Color32, Response, menu, Button};
-use egui_extras::{Size, StripBuilder};
+use egui_extras::{Size, StripBuilder, RetainedImage};
+use vecshard::{ShardExt, VecShard};
 
 pub struct Song {
     pub(crate) path: String,
@@ -29,6 +30,16 @@ impl Song{
         }
 
         return 0;
+    }
+
+    pub fn same_song(&self, s: &Song) -> bool{
+        if self.path == s.path{
+            return true;
+        }
+        else if self.name == s.name && self.artist == s.artist{
+            return true;
+        }
+        return false;
     }
 
     pub fn clone(s: &Song) -> Song{
@@ -87,6 +98,19 @@ impl Song{
         }
     }
 
+    pub fn nm_from_path(path : &String) -> String {
+        let mut nm = String::new();
+
+        for i in path.chars(){
+            nm.push(i);
+            if i == '\\' || i == '/'{
+                nm = String::new();
+            }
+        }
+
+        return nm;
+    }
+
     pub fn get_panel(&self, ui: &mut egui::Ui, row: &usize, playing: bool) -> (Response, bool) {
 
         let dark_mode = ui.visuals().dark_mode;
@@ -112,9 +136,13 @@ impl Song{
                                     faded_color(Color32::BLUE),
                                 );
                             }
-                            ui.label("LARGE\nIMAGE\nGOES\nHERE");
                             egui::Grid::new(&self.path).show(ui, |a| {
-                                a.label(&self.name);
+                                if self.name == String::new(){
+                                    a.label(Song::nm_from_path(&self.path).replace(".mp", ""));
+                                }
+                                else{
+                                    a.label(&self.name);
+                                }
                                 a.end_row();
                                 a.label(&self.artist);
                                 a.end_row();
@@ -136,12 +164,22 @@ impl Song{
 
     pub fn first_alphabeticly(word1: &str, word2: &str) -> bool{
         let mut i = 0;
+        let mut v1 : u32 = 0;
+        let mut v2 : u32 = 0;
 
         while i< word1.len() && i < word2.len(){
-            if (word1.chars().nth(i).unwrap() as u32) < (word2.chars().nth(i).unwrap() as u32){
+            v1 = match word1.chars().nth(i) {
+                None => {0}
+                Some(c) => {c as u32}
+            };
+            v2 = match word2.chars().nth(i) {
+                None => {0}
+                Some(c) => {c as u32}
+            };
+            if (v1 < v2){
                 return true;
             }
-            if (word1.chars().nth(i).unwrap() as u32) > (word2.chars().nth(i).unwrap() as u32){
+            if (v1 > v2){
                 return false;
             }
             i += 1;
@@ -150,55 +188,167 @@ impl Song{
         return true;
     }
 
-    pub fn sort_by_name(ls:&mut Vec<Song>) -> &mut Vec<Song>{
-        let pivot = Song::clone(ls.get(ls.len()-1).unwrap());
-        let mut smaller = 0;
-        let mut i = 0;
-        while i<ls.len(){
-            if Song::first_alphabeticly(&(ls.get(i).unwrap().name),&pivot.name){
-                smaller+=1;
-                if Song::first_alphabeticly(&(ls.get(smaller).unwrap().name),&(ls.get(i).unwrap().name)){
-                    ls.swap(i,smaller);
+    fn vs_to_vs(v: (VecShard<Song>, VecShard<Song>))->(Vec<Song>, Vec<Song>){
+        let mut nv = (vec![], vec![]);
+        for i in v.0{
+            nv.0.push(i);
+        }
+        for i in v.1{
+            nv.1.push(i);
+        }
+
+        return nv
+    }
+
+
+    fn sort_names(mut ls: Vec<Song>)->Vec<Song>{
+        if ls.len() < 2{
+            return ls;
+        }
+
+        let mut current_index = 0;
+        let mut swap_marker: i32 = -1;
+        let pivot = String::from(&ls.get(ls.len()-1).unwrap().name);
+        while current_index < ls.len(){
+            if Song::first_alphabeticly(&ls.get(current_index).unwrap().name, &pivot){
+                swap_marker += 1;
+                if Song::first_alphabeticly(&ls.get(current_index).unwrap().name, &ls.get(swap_marker as usize).unwrap().name){
+                    ls.swap(current_index, swap_marker as usize);
                 }
+            }
+
+            current_index += 1;
+        }
+        let ln = ls.len();
+        let (mut ls1, mut ls2) = Song::vs_to_vs(ls.split_inplace_at(swap_marker as usize));
+        if swap_marker > 1{
+            ls1 = Song::sort_names(ls1);
+        }
+        if swap_marker as usize != ln -1{
+            ls2 = Song::sort_names(ls2);
+        }
+        ls1.append(&mut ls2);
+        return ls1
+    }
+
+    fn sort_artists(mut ls: Vec<Song>)->Vec<Song>{
+        if ls.len() < 2{
+            return ls;
+        }
+
+        let mut current_index = 0;
+        let mut swap_marker: i32 = -1;
+        let pivot = String::from(&ls.get(ls.len()-1).unwrap().artist);
+        while current_index < ls.len(){
+            if Song::first_alphabeticly(&ls.get(current_index).unwrap().artist, &pivot){
+                swap_marker += 1;
+                if Song::first_alphabeticly(&ls.get(current_index).unwrap().artist, &ls.get(swap_marker as usize).unwrap().artist){
+                    ls.swap(current_index, swap_marker as usize);
+                }
+            }
+
+            current_index += 1;
+        }
+        let ln = ls.len();
+        let (mut ls1, mut ls2) = Song::vs_to_vs(ls.split_inplace_at(swap_marker as usize));
+        if swap_marker > 1{
+            ls1 = Song::sort_artists(ls1);
+        }
+        if swap_marker as usize != ln -1{
+            ls2 = Song::sort_artists(ls2);
+        }
+        ls1.append(&mut ls2);
+        return ls1
+    }
+
+    fn sort_albums(mut ls: Vec<Song>)->Vec<Song>{
+        if ls.len() < 2{
+            return ls;
+        }
+
+        let mut current_index = 0;
+        let mut swap_marker: i32 = -1;
+        let pivot = String::from(&ls.get(ls.len()-1).unwrap().album);
+        while current_index < ls.len(){
+            if Song::first_alphabeticly(&ls.get(current_index).unwrap().album, &pivot){
+                swap_marker += 1;
+                if Song::first_alphabeticly(&ls.get(current_index).unwrap().album, &ls.get(swap_marker as usize).unwrap().album){
+                    ls.swap(current_index, swap_marker as usize);
+                }
+            }
+
+            current_index += 1;
+        }
+        let ln = ls.len();
+        let (mut ls1, mut ls2) = Song::vs_to_vs(ls.split_inplace_at(swap_marker as usize));
+        if swap_marker > 1{
+            ls1 = Song::sort_albums(ls1);
+        }
+        if swap_marker as usize != ln -1{
+            ls2 = Song::sort_albums(ls2);
+        }
+        ls1.append(&mut ls2);
+        return ls1
+    }
+
+    fn hide_blank_names(mut ls: Vec<Song>) -> Vec<Song>{
+        let mut i = 0;
+        let mut temp: Song;
+        while ls.len() > i{
+            if ls.get(i).unwrap().name == String::new(){
+                temp = ls.remove(i);
+                ls.push(temp);
             }
             i += 1;
         }
-        ls.swap(smaller, i-1);
-        ls
+
+        return ls;
     }
 
-    pub fn sort_by_artist(ls:&mut Vec<Song>) -> &mut Vec<Song>{
-        let pivot = Song::clone(ls.get(ls.len()-1).unwrap());
-        let mut smaller = 0;
+    fn hide_blank_albums(mut ls: Vec<Song>) -> Vec<Song>{
         let mut i = 0;
-        while i<ls.len(){
-            if Song::first_alphabeticly(&(ls.get(i).unwrap().artist),&pivot.artist){
-                smaller+=1;
-                if Song::first_alphabeticly(&(ls.get(smaller).unwrap().artist),&(ls.get(i).unwrap().artist)){
-                    ls.swap(i,smaller);
-                }
+        let mut temp: Song;
+        while ls.len() > i{
+            if ls.get(i).unwrap().album == String::new(){
+                temp = ls.remove(i);
+                ls.push(temp);
             }
             i += 1;
         }
-        ls.swap(smaller, i-1);
-        ls
+
+        return ls;
     }
 
-    pub fn sort_by_album(ls:&mut Vec<Song>) -> &mut Vec<Song>{
-        let pivot = Song::clone(ls.get(ls.len()-1).unwrap());
-        let mut smaller = 0;
+    fn hide_blank_artists(mut ls: Vec<Song>) -> Vec<Song>{
         let mut i = 0;
-        while i<ls.len(){
-            if Song::first_alphabeticly(&(ls.get(i).unwrap().album),&pivot.album){
-                smaller+=1;
-                if Song::first_alphabeticly(&(ls.get(smaller).unwrap().album),&(ls.get(i).unwrap().album)){
-                    ls.swap(i,smaller);
-                }
+        let mut temp: Song;
+        while ls.len() > i{
+            if ls.get(i).unwrap().artist == String::new(){
+                temp = ls.remove(i);
+                ls.push(temp);
             }
             i += 1;
         }
-        ls.swap(smaller, i-1);
-        ls
+
+        return ls;
     }
 
+
+    pub fn sort_by_names(mut ls: Vec<Song>) -> Vec<Song>{
+        ls = Song::sort_names(ls);
+        ls = Song::hide_blank_names(ls);
+        return ls
+    }
+
+    pub fn sort_by_artists(mut ls: Vec<Song>) -> Vec<Song>{
+        ls = Song::sort_artists(ls);
+        ls = Song::hide_blank_artists(ls);
+        return ls
+    }
+
+    pub fn sort_by_albums(mut ls: Vec<Song>) -> Vec<Song>{
+        ls = Song::sort_albums(ls);
+        ls = Song::hide_blank_albums(ls);
+        return ls
+    }
 }
