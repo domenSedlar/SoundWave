@@ -3,6 +3,7 @@
 use std::collections::HashMap;
 use std::fs;
 use std::env;
+use vecshard::{ShardExt, VecShard};
 
 use super::super::Song;
 pub mod tag_reader;
@@ -142,6 +143,67 @@ pub fn get_songs(path: &String) -> Vec<Song>{
     l
 }
 
+fn first_alphabeticly(word1: &str, word2: &str) -> bool{
+    let mut i = 0;
+
+    while i< word1.len() && i < word2.len(){
+        if (word1.chars().nth(i).unwrap() as u32) < (word2.chars().nth(i).unwrap() as u32){
+            return true;
+        }
+        if (word1.chars().nth(i).unwrap() as u32) > (word2.chars().nth(i).unwrap() as u32){
+            return false;
+        }
+        i += 1;
+    }
+
+    return true;
+}
+
+fn vs_to_vs(v: (VecShard<String>, VecShard<String>))->(Vec<String>, Vec<String>){
+    let mut nv = (vec![], vec![]);
+    for i in v.0{
+        nv.0.push(i);
+    }
+    for i in v.1{
+        nv.1.push(i);
+    }
+
+    return nv
+}
+
+
+fn sort(mut ls: Vec<String>)->Vec<String>{
+    if ls.len() < 2{
+        return ls;
+    }
+
+    let mut current_index = 0;
+    let mut swap_marker: i32 = -1;
+    let pivot = String::from(ls.get(ls.len()-1).unwrap());
+    println!("sorting");
+    while current_index < ls.len(){
+        if first_alphabeticly(&ls.get(current_index).unwrap(), &pivot){
+            swap_marker += 1;
+            println!("{0}{1}",ls.len(), swap_marker);
+            if first_alphabeticly(&ls.get(current_index).unwrap(), &ls.get(swap_marker as usize).unwrap()){
+                ls.swap(current_index, swap_marker as usize);
+            }
+        }
+
+        current_index += 1;
+    }
+    let ln = ls.len();
+    let (mut ls1, mut ls2) = vs_to_vs(ls.split_inplace_at(swap_marker as usize));
+    if swap_marker > 1{
+        ls1 = sort(ls1);
+    }
+    if swap_marker as usize != ln -1{
+        ls2 = sort(ls2);
+    }
+    ls1.append(&mut ls2);
+    return ls1
+}
+
 pub fn ls_all_in_dir(dir: &String) -> (Vec<String>, Vec<Song>){
     let (dls, fls) = (get_folders_or_files(true), get_songs(dir));
     let mut items: (Vec<String>, Vec<Song>) = (Vec::new(), Vec::new());
@@ -156,6 +218,8 @@ pub fn ls_all_in_dir(dir: &String) -> (Vec<String>, Vec<Song>){
             items.1.push(s);
         }
     }
+
+    items.0 = sort(items.0);
 
     return items
 }
