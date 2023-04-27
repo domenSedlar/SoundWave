@@ -98,10 +98,12 @@ impl Controller {
                 println!("next");
             }
         });
-
-        if ui.add(egui::Slider::new(&mut self.position, 0..=100)).drag_released(){
-            self.player.send(Command::SetPosInSeconds(self.position));
-        };
+        ui.horizontal(|ui| {
+            ui.spacing_mut().slider_width = ui.available_width()- 40.0;
+            if ui.add(egui::Slider::new(&mut self.position, 0..=100)).drag_released(){
+                self.player.send(Command::SetPosInSeconds(self.position));
+            };
+        });
 
         if self.position == 100 {
             self.next();
