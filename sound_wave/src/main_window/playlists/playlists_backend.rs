@@ -102,6 +102,17 @@ impl PlayLs{
         fs::write(format!("./var/PlaylistDir/{plyls}"), ls);
     }
 
+    pub fn rm_pls(i: &usize, mut ls: [Vec<String>; 2]) -> [Vec<String>; 2]{
+        fs::remove_file(format!("./var/PlaylistDir/{0}", ls[0].get(*i).unwrap()));
+        fs::remove_file(format!("./var/Covers/{0}", ls[0].get(*i).unwrap()));
+
+        ls[0].remove(*i);
+        ls[1].remove(*i);
+
+        PlayLs::save_plsls(&ls);
+        ls
+    }
+
     pub fn rm_song(snm: &String, pnm: &String, sls: Vec<Song>){
         let mut ls = String::new();
         for i in sls{

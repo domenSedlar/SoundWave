@@ -288,7 +288,9 @@ impl Windows {
                                     None => {false}
                                     Some(b) => {s.same_song(b) }
                                 }
-                            });
+                            },
+                            self.cover_adder.get_image(&s.album)
+                            );
                             if *m{
                                 self.more = MrCtx::First(String::from(&s.path))
                             }
@@ -378,7 +380,10 @@ impl Windows {
                             if text == " - "{
                                 text = file_manager::fm_backend::nm_from_path(&s.path);
                             }
-                            let (r, m) = &s.get_panel(ui, &row, row== self.controller.index);
+                            let (r, m) = &s.get_panel(
+                                                        ui, &row,
+                                                      row== self.controller.index,
+                                                      self.cover_adder.get_image(&s.album));
                             if *m{
                                 self.more = MrCtx::First(String::from(&s.path))
                             }
@@ -512,7 +517,7 @@ impl Windows {
                                             None => {false}
                                             Some(b) => {s.same_song(b) }
                                         }
-                                    });
+                                    }, self.cover_adder.get_image(&s.album));
                                     if *m{
                                         self.more = MrCtx::First(String::from(&s.path))
                                     }

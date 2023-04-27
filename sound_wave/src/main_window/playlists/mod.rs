@@ -137,6 +137,9 @@ impl Playlists{
             PlaylistsState::Details(u) => {
                 if &u == i{
                     ui.label(self.ls_of_playls[1].get(*i).unwrap());
+                    if ui.button("-").clicked(){
+                        self.ls_of_playls = PlayLs::rm_pls(i, self.ls_of_playls.clone());
+                    }
                 }
             }
             _ => {}

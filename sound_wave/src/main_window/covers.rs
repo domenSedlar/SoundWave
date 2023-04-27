@@ -19,7 +19,7 @@ impl AlbumCovers {
         let mut ls:HashMap<String, Option<RetainedImage>> = HashMap::new();
         let paths = fs::read_dir("var/AlbumCovers").unwrap();
         for i in paths{
-            ls.insert(i.as_ref().unwrap().path().display().to_string(), None);
+            ls.insert(i.as_ref().unwrap().file_name().into_string().unwrap(), None);
         }
         AlbumCovers {
             name: "".to_string(),
@@ -37,12 +37,14 @@ impl AlbumCovers {
         if self.covers.contains_key(cv_nm){
             if self.covers.get(cv_nm).unwrap().is_none()
             {
-                *self.covers.get_mut(cv_nm).unwrap() = Some(egui_extras::RetainedImage::from_svg_bytes_with_size(
+                self.covers.remove(cv_nm);
+                self.covers.insert(String::from(cv_nm), Some(
+                    egui_extras::RetainedImage::from_image_bytes(
                     cv_nm,
-                    &fs::read(format!("./var/AlbumCovers/{}", cv_nm)).unwrap(),
-                    egui_extras::image::FitTo::Size(80,80)).unwrap());
+                    &fs::read(format!("./var/AlbumCovers/{}", cv_nm)).unwrap()).unwrap()));
             }
-            self.covers.get(cv_nm).unwrap();
+
+            return self.covers.get(cv_nm).unwrap();
         }
 
         return &None
