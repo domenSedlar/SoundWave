@@ -71,17 +71,18 @@ impl PlayLs{
         PlayLs::save_plsls(&ls);
 
     }
+    pub fn get_ls_str(pth: &String) -> Vec<String>{
+        let mut b = vec![];
+        for i in fs::read_to_string(format!("./var/PlaylistDir/{pth}"))
+            .unwrap().split('\r').collect::<Vec<&str>>(){
+            b.push(i.to_string());
+        }
+        b
+    }
 
     pub fn get_ls(pth: &String) -> Vec<Song>{
         let mut sls: Vec<Song> = vec![];
-        let ls: Vec<String> = {
-            let mut b = vec![];
-            for i in fs::read_to_string(format!("./var/PlaylistDir/{pth}"))
-                .unwrap().split('\r').collect::<Vec<&str>>(){
-                b.push(i.to_string());
-            }
-            b
-        };
+        let ls: Vec<String> = PlayLs::get_ls_str(pth);
 
         for s in ls{
             if s == String::new(){
@@ -95,9 +96,14 @@ impl PlayLs{
 
     pub fn add_song(pth: &String, plyls: &String){
         let ls = fs::read_to_string(format!("./var/PlaylistDir/{plyls}")).unwrap();
-        if ls.contains(&*pth){
-            return;
+        let l = PlayLs::get_ls(plyls);
+        let s = Song::deserialize(String::from(pth), ';');
+        for i in l{
+            if s.same_song(&i){
+                return;
+            }
         }
+
         let ls = format!("{0}{1}\r", ls, &pth);
         fs::write(format!("./var/PlaylistDir/{plyls}"), ls);
     }
