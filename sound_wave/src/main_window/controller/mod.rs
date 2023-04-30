@@ -99,7 +99,7 @@ impl Controller {
             }
         });
         ui.horizontal(|ui| {
-            ui.spacing_mut().slider_width = ui.available_width()- 40.0;
+            ui.spacing_mut().slider_width = ui.available_width()- 50.0;
             if ui.add(egui::Slider::new(&mut self.position, 0..=100)).drag_released(){
                 self.player.send(Command::SetPosInSeconds(self.position));
             };

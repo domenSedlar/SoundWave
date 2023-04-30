@@ -11,7 +11,8 @@ pub struct AlbumCovers {
     name: String,
     image: String,
     i: RetainedImage,
-    covers: HashMap<String, Option<RetainedImage>>
+    covers: HashMap<String, Option<RetainedImage>>,
+    lt: String
 }
 
 impl AlbumCovers {
@@ -29,7 +30,8 @@ impl AlbumCovers {
                 &fs::read("./var/rustacean-flat-happy.svg").unwrap(),
                 egui_extras::image::FitTo::Size(200,100)).unwrap(),
 
-            covers: ls
+            covers: ls,
+            lt: "".to_string()
         }
     }
 
@@ -77,6 +79,7 @@ impl AlbumCovers {
                 &self.i.show_size(ui, egui::Vec2::new(200.0, 200.0));
 
             });
+            ui.label(&self.lt);
 
         });
         if ui.button("Add").clicked(){
@@ -85,9 +88,16 @@ impl AlbumCovers {
     }
 
     pub fn add_cover(&mut self){
-        fs::copy(&self.image, format!("./var/AlbumCovers/{0}", &self.name)).expect("TODO: panic message");
+        match fs::copy(&self.image, format!("./var/AlbumCovers/{0}", &self.name)) {
+            Ok(_) => {}
+            Err(_) => {
+                self.lt = "pick an image".to_string();
+                return;
+            }
+        }
         self.image = String::new();
         self.name = String::new();
+        self.lt = String::new();
         self.i = egui_extras::RetainedImage::from_svg_bytes_with_size(
             "./var/rustacean-flat-happy.svg",
             &fs::read("./var/rustacean-flat-happy.svg").unwrap(),
