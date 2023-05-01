@@ -230,6 +230,7 @@ impl Windows {
         egui::SidePanel::left("Btn").max_width(5.0).show_inside(ui, |ui| {
             if ui.button("=").clicked(){
                 self.current_window = CurrentWindow::Queue;
+                self.main_text = String::from("Up next")
             }
         });
         self.controller.get_window(ui);
