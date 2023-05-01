@@ -100,107 +100,110 @@ impl Windows {
             return
         }
         ui.horizontal(|u|{
+            if self.current_window == CurrentWindow::Files ||
+                self.current_window == CurrentWindow::Playlists{
+                if u.button("+").clicked() {
+                    let ls: &Vec<Song>;
 
-            if u.button("+").clicked(){
-                let ls: &Vec<Song>;
+                    if self.current_window == CurrentWindow::Files {
+                        ls = &self.file_manager.items.1;
 
-                if self.current_window == CurrentWindow::Files{
-                    ls = &self.file_manager.items.1;
-
-                    for s in ls {
-                        if {
-                            let mut b = true;
-                            for i in &self.controller.list{
-                                if s.name == i.name && s.artist == i.artist && s.album == i.album{
-                                    b = false;
-                                    break;
+                        for s in ls {
+                            if {
+                                let mut b = true;
+                                for i in &self.controller.list {
+                                    if s.name == i.name && s.artist == i.artist && s.album == i.album {
+                                        b = false;
+                                        break;
+                                    }
                                 }
+                                b
                             }
-                            b
+                            {
+                                self.controller.list.push(Song::clone(s));
+                            }
                         }
-                        {
+                    } else if self.current_window == CurrentWindow::Playlists {
+                        ls = &self.playlists.playlist;
+                        for s in ls {
+                            if {
+                                let mut b = true;
+                                for i in &self.controller.list {
+                                    if s.name == i.name && s.artist == i.artist && s.album == i.album {
+                                        b = false;
+                                        break;
+                                    }
+                                }
+                                b
+                            }
+                            {
+                                self.controller.list.push(Song::clone(s));
+                            }
+                        }
+                    }
+                }
+
+                if u.button("++").clicked() {
+                    let ls: &Vec<Song>;
+
+                    if self.current_window == CurrentWindow::Files {
+                        ls = &self.file_manager.items.1;
+
+                        for s in ls {
+                            self.controller.list.push(Song::clone(s));
+                        }
+                    } else if self.current_window == CurrentWindow::Playlists {
+                        ls = &self.playlists.playlist;
+                        for s in ls {
                             self.controller.list.push(Song::clone(s));
                         }
                     }
                 }
-                else if self.current_window == CurrentWindow::Playlists{
-                    ls = &self.playlists.playlist;
-                    for s in ls{
-                        if {
-                            let mut b = true;
-                            for i in &self.controller.list{
-                                if s.name == i.name && s.artist == i.artist && s.album == i.album{
-                                    b = false;
-                                    break;
+
+                if u.button("-").clicked() {
+                    let ls: &Vec<Song>;
+
+                    if self.current_window == CurrentWindow::Files {
+                        ls = &self.file_manager.items.1;
+
+                        for s in ls {
+                            let mut j = 0;
+                            for i in Song::clone_ls(&self.controller.list) {
+                                if s.name == i.name && s.artist == i.artist && s.album == i.album {
+                                    self.controller.list.remove(j);
                                 }
+                                j += 1;
                             }
-                            b
                         }
-                        {
-                        self.controller.list.push(Song::clone(s));
-                        }
-                    }
-                }
-            }
-
-            if u.button("++").clicked(){
-                let ls: &Vec<Song>;
-
-                if self.current_window == CurrentWindow::Files{
-                    ls = &self.file_manager.items.1;
-
-                    for s in ls{
-                        self.controller.list.push(Song::clone(s));
-                    }
-                }
-                else if self.current_window == CurrentWindow::Playlists{
-                    ls = &self.playlists.playlist;
-                    for s in ls{
-                        self.controller.list.push(Song::clone(s));
-                    }
-                }
-            }
-
-            if u.button("-").clicked(){
-                let ls: &Vec<Song>;
-
-                if self.current_window == CurrentWindow::Files{
-                    ls = &self.file_manager.items.1;
-
-                    for s in ls{
-                        let mut j = 0;
-                        for i in Song::clone_ls(&self.controller.list){
-                            if s.name == i.name && s.artist == i.artist && s.album == i.album{
-                                self.controller.list.remove(j);
+                    } else if self.current_window == CurrentWindow::Playlists {
+                        ls = &self.playlists.playlist;
+                        for s in ls {
+                            let mut j = 0;
+                            for i in Song::clone_ls(&self.controller.list) {
+                                if s.name == i.name && s.artist == i.artist && s.album == i.album {
+                                    self.controller.list.remove(j);
+                                }
+                                j += 1;
                             }
-                            j += 1;
                         }
                     }
                 }
-                else if self.current_window == CurrentWindow::Playlists{
-                    ls = &self.playlists.playlist;
-                    for s in ls{
-                        let mut j = 0;
-                        for i in Song::clone_ls(&self.controller.list){
-                            if s.name == i.name && s.artist == i.artist && s.album == i.album{
-                                self.controller.list.remove(j);
-                            }
-                            j += 1;
-                        }
+                if u.button("Sort by").clicked() {
+                    self.sort_options = true;
+                }
+                if u.button("|>").clicked(){
+                    match &self.current_window {
+                        CurrentWindow::Files => {self.controller.play(Song::clone_ls(&self.file_manager.items.1), 0)}
+                        CurrentWindow::Playlists => {self.controller.play(Song::clone_ls(&self.playlists.playlist), 0)}
+                        CurrentWindow::Playlist => {self.controller.play(Song::clone_ls(&self.playlists.playlist), 0)}
+                        _ => {}
                     }
                 }
             }
-            if u.button("Sort by").clicked(){
-                self.sort_options = true;
-            }
-            if u.button("|>").clicked(){
-                match &self.current_window {
-                    CurrentWindow::Files => {self.controller.play(Song::clone_ls(&self.file_manager.items.1), 0)}
-                    CurrentWindow::Playlists => {self.controller.play(Song::clone_ls(&self.playlists.playlist), 0)}
-                    CurrentWindow::Playlist => {self.controller.play(Song::clone_ls(&self.playlists.playlist), 0)}
-                    _ => {}
-                }
-            }
+
+            if self.current_window == CurrentWindow::Files ||
+                self.current_window == CurrentWindow::Playlists ||
+                self.current_window == CurrentWindow::Queue{
             if u.button("Shuffle Play").clicked() {
                 match &self.current_window {
                     CurrentWindow::Files => { self.controller.play_true_shuffle(&self.file_manager.items.1) }
@@ -212,6 +215,7 @@ impl Windows {
                     }
                     _ => {}
                 }
+            }
             }
         });
     }
