@@ -36,7 +36,7 @@ impl Song{
         if self.path == s.path{
             return true;
         }
-        else if self.name == s.name && self.artist == s.artist{
+        else if self.name == s.name && self.artist == s.artist && self.name != "".to_string(){
             return true;
         }
         return false;
@@ -123,7 +123,7 @@ impl Song{
         let r = ui.push_id(row, |ui| {
             ui.horizontal(|a| {
                 StripBuilder::new(a)
-                    .size(Size::exact(100.0))
+                    .size(Size::exact(82.0))
                     .size(Size::remainder())
                     .size(Size::exact(5.0))
                     .vertical(|mut strip| {
