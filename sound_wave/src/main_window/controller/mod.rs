@@ -8,6 +8,7 @@ use std::thread;
 use std::thread::JoinHandle;
 use egui::Ui;
 use egui::Vec2;
+use gstreamer::glib::listenv;
 use single_value_channel::channel_starting_with;
 
 use rand::Rng;
@@ -26,6 +27,23 @@ pub struct Controller {
 impl Controller {
     pub fn default() -> Controller {
         Controller {player: Player::default() , position: 0, list: Vec::new(), index: 0}
+    }
+
+    pub fn play_next(&mut self, s: Song){
+        let mut ls: Vec<Song> = vec![];
+        let mut i = 0;
+        let mut ds: Song;
+        while self.list.len() > 0{
+            ds = self.list.remove(0);
+            if !(s.same_song(&ds)){
+                ls.push(ds);
+            }
+            if i == self.index{
+                ls.push(Song::clone(&s));
+            }
+            i += 1;
+        }
+        self.list = ls;
     }
 
     fn next(&mut self){

@@ -359,6 +359,15 @@ impl Windows {
                     MrCtx::Add(b) => {b.to_string()}
                 })
             }
+            if a.button("Play next").clicked(){
+                self.controller.play_next(
+                    file_manager::fm_backend::tag_reader::read_to_song(String::from(&match &self.more{
+                        MrCtx::No => {String::new()}
+                        MrCtx::First(a) => {a.to_string()}
+                        MrCtx::Add(b) => {b.to_string()}
+                    })));
+                self.more = MrCtx::No;
+            }
             if a.button("X").clicked(){
                 self.more = MrCtx::No;
             }

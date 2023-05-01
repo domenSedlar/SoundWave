@@ -112,7 +112,6 @@ impl Song{
     }
 
     pub fn get_panel(&self, ui: &mut egui::Ui, row: &usize, playing: bool, img: &Option<RetainedImage>) -> (Response, bool) {
-
         let dark_mode = ui.visuals().dark_mode;
         let faded_color = ui.visuals().window_fill();
         let faded_color = |color: Color32| -> Color32 {
@@ -142,6 +141,7 @@ impl Song{
                                 None => {ui.label("LARGE\nIMAGE\nGOES\nHERE");}
                                 Some(a) => {
                                     a.show_size(ui, egui::Vec2::new(80.0, 80.0));
+
                                 }
                             }
                             egui::Grid::new(&self.path).show(ui, |a| {
