@@ -3,6 +3,7 @@
 mod main_window;
 
 use eframe::egui;
+use egui_extras::RetainedImage;
 use gstreamer::glib::Char;
 //use gstreamer::glib::OptionArg::String;
 
@@ -56,8 +57,8 @@ impl eframe::App for MyApp {
                 .default_width(150.0)
                 .width_range(80.0..=200.0)
                 .show_inside(ui, |ui| {
-                    ui.vertical_centered(|ui| {
-                        ui.heading("Left Panel");
+                    ui.vertical(|ui| {
+                        ui.heading("SoundWave");
                     });
                     egui::ScrollArea::vertical().show(ui, |ui| {
                         self.w.get_tabs_window(ui);
@@ -69,14 +70,19 @@ impl eframe::App for MyApp {
                 .min_height(32.0)
                 .show_inside(ui, |ui| {
                         ui.vertical_centered(|ui| {
-                            ui.heading("Top Panel");
+                            let (s, i) = self.w.get_current_song_data();
+                            match i {
+                                None => {}
+                                Some(a) => {a.show_size(ui, egui::Vec2::new(200.0, 200.0));}
+                            }
+                            ui.heading(s);
                         });
                     self.w.get_top_window(ui);
                 });
 
             egui::CentralPanel::default().show_inside(ui, |ui| {
-                ui.vertical_centered(|ui| {
-                    ui.heading("Central Panel");
+                ui.vertical(|ui| {
+                    ui.heading(&self.w.main_text);
                 });
                 egui::ScrollArea::vertical().show(ui, |ui| {
                     self.w.get_main_window(ui);

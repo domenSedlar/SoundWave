@@ -54,10 +54,10 @@ impl Controller {
         }
     }
 
-    pub fn get_current_song(&self) -> String{
+    pub fn get_current_song(&self) -> Song{
         match &self.list.get(self.index) {
-            None => {return String::new()}
-            Some(a) => {return String::from(&a.path)}
+            None => {return Song::default()}
+            Some(a) => {return Song::clone(a)}
         }
     }
 

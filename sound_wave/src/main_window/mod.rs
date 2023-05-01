@@ -5,6 +5,7 @@ use egui::Color32;
 
 use rfd::FileDialog;
 use egui::*;
+use egui_extras::RetainedImage;
 //use gstreamer::glib::OptionArg::String as OtherString;
 
 mod controller;
@@ -48,7 +49,8 @@ pub struct Windows {
     current_window: CurrentWindow,
     more: MrCtx,
     sort_options: bool,
-    sorting_by: SortBy
+    sorting_by: SortBy,
+    pub(crate) main_text: String
 }
 
 impl Windows {
@@ -61,19 +63,23 @@ impl Windows {
             current_window: CurrentWindow::Files,
             more: MrCtx::No,
             sort_options: false,
-            sorting_by: SortBy::Name
+            sorting_by: SortBy::Name,
+            main_text: "Files".to_string()
         }
     }
     pub fn get_tabs_window(&mut self, ui: &mut egui::Ui){
         if ui.button("Browse files").clicked(){
             self.current_window = CurrentWindow::Files;
+            self.main_text = String::from("Files")
         }
         if ui.button("Playlists").clicked(){
             self.current_window = CurrentWindow::Playlists;
             self.playlists.selected = None;
+            self.main_text = String::from("Playlists")
         }
         if ui.button("Album Covers").clicked(){
             self.current_window = CurrentWindow::AddingCovers;
+            self.main_text = String::from("Add Album Covers")
         }
     }
 
@@ -503,7 +509,7 @@ impl Windows {
                 self.file_manager.shown_location = String::from(&self.file_manager.current_location);
             }
 
-            let curr_song = &self.controller.get_current_song();
+            //let curr_song = &self.controller.get_current_song();
             let num_of_dirs = self.file_manager.items.0.len();
             let text_style = TextStyle::Body;
             let row_height = ui.text_style_height(&text_style);
@@ -592,6 +598,16 @@ impl Windows {
             }
         }
 
+    }
+
+    pub fn get_current_song_data(&mut self) -> (String, &Option<RetainedImage>){
+        let s = self.controller.get_current_song();
+        let mut nm = String::from(&s.path);
+        if s.name != String::new(){
+            nm = format!("{0} - {1}", s.name, s.artist);
+        }
+        let i = self.cover_adder.get_image(&s.album);
+        return (nm, i)
     }
 }
 
