@@ -124,10 +124,11 @@ impl Song{
         let r = ui.push_id(row, |ui| {
             ui.horizontal(|a| {
                 StripBuilder::new(a)
-                    .size(Size::exact(60.0))
+                    .size(Size::exact(100.0))
                     .size(Size::remainder())
                     .size(Size::exact(5.0))
                     .vertical(|mut strip| {
+
                         strip.cell(|ui| {
                             if playing{
                                 ui.painter().rect_filled(
@@ -135,6 +136,7 @@ impl Song{
                                     0.0,
                                     faded_color(Color32::BLUE),
                                 );
+
                             }
                             match img{
                                 None => {ui.label("LARGE\nIMAGE\nGOES\nHERE");}

@@ -12,7 +12,7 @@ pub struct AlbumCovers {
     image: String,
     i: RetainedImage,
     covers: HashMap<String, Option<RetainedImage>>,
-    lt: String
+    label_text: String
 }
 
 impl AlbumCovers {
@@ -31,7 +31,7 @@ impl AlbumCovers {
                 egui_extras::image::FitTo::Size(200,100)).unwrap(),
 
             covers: ls,
-            lt: "".to_string()
+            label_text: "".to_string()
         }
     }
 
@@ -79,7 +79,7 @@ impl AlbumCovers {
                 &self.i.show_size(ui, egui::Vec2::new(200.0, 200.0));
 
             });
-            ui.label(&self.lt);
+            ui.label(&self.label_text);
 
         });
         if ui.button("Add").clicked(){
@@ -91,13 +91,13 @@ impl AlbumCovers {
         match fs::copy(&self.image, format!("./var/AlbumCovers/{0}", &self.name)) {
             Ok(_) => {}
             Err(_) => {
-                self.lt = "pick an image".to_string();
+                self.label_text = "pick a valid image".to_string();
                 return;
             }
         }
         self.image = String::new();
         self.name = String::new();
-        self.lt = String::new();
+        self.label_text = String::new();
         self.i = egui_extras::RetainedImage::from_svg_bytes_with_size(
             "./var/rustacean-flat-happy.svg",
             &fs::read("./var/rustacean-flat-happy.svg").unwrap(),
