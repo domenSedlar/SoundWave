@@ -206,6 +206,10 @@ impl Windows {
                     CurrentWindow::Files => { self.controller.play_true_shuffle(&self.file_manager.items.1) }
                     CurrentWindow::Playlists => { self.controller.play_true_shuffle(&self.playlists.playlist) }
                     CurrentWindow::Playlist => { self.controller.play_true_shuffle(&self.playlists.playlist) }
+                    CurrentWindow::Queue => {
+                        let ls = Song::clone_ls(&self.controller.list);
+                        self.controller.play_true_shuffle(&ls)
+                    }
                     _ => {}
                 }
             }
