@@ -10,12 +10,27 @@ use super::Command;
 
 use single_value_channel::channel_starting_with;
 
+fn format_path(pth: String) -> String{
+    let mut s: String = String::new();
+    for i in pth.chars(){
+        if i == '\\'{
+            s.push('/');
+        }
+        else{
+            s.push(i);
+        }
+    }
 
-pub fn start(song: String, rx: mpsc::Receiver<Command>, tx: single_value_channel::Updater<u64>) {
+    return s;
+} 
+
+
+pub fn start(song: String, rx: mpsc::Receiver<Command>, tx: single_value_channel::Updater<u64>, ltx: single_value_channel::Updater<u64>) {
     // Initialize GStreamer
     gst::init().unwrap();
     // Build the pipeline
-    let uri = format!("file://{song}");
+    //let uri = format!("file:///{song}");
+    let uri = format_path(format!("file:///{song}"));
     let pipeline = gst::parse_launch(&format!("playbin uri={}", uri)).unwrap();
 
     // Start playing
@@ -111,7 +126,11 @@ pub fn start(song: String, rx: mpsc::Receiver<Command>, tx: single_value_channel
         }
         if lenght_of_song == None{
             match pipeline.query_duration::<gst::format::ClockTime>(){
-                Some(t) => lenght_of_song = Some(t.abs_diff(0)),
+                Some(t) => {
+                    lenght_of_song = Some(t.abs_diff(0));
+                    ltx.update(t.seconds());
+                    ()
+                },
                 _ => ()
             }
             //println!("{:?}", lenght_of_song);

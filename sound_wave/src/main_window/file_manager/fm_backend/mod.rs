@@ -104,7 +104,7 @@ pub fn get_paths() -> HashMap<String, String>{
 
     for i in paths_str{
         if i == "" {continue}
-        let pair = i.split(":").collect::<Vec<&str>>();
+        let pair = i.split("\r").collect::<Vec<&str>>();
         paths.insert(<Vec<&str> as AsRef<Vec<&str>>>::as_ref(&pair).get(0).unwrap().to_string(), pair.get(1).unwrap().to_string());
     }
 
@@ -267,7 +267,7 @@ pub fn path_to_str(paths: &HashMap<String,String>) -> String{
 
     for (key, value) in paths
     {
-        data = format!("{data}{key}:{value}\n");
+        data = format!("{data}{key}\r{value}\n");
     }
 
     return data

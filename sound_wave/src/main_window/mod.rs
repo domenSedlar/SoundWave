@@ -60,11 +60,11 @@ impl Windows {
             controller: Controller::default(),
             playlists: Playlists::default(),
             cover_adder: AlbumCovers::default(),
-            current_window: CurrentWindow::Files,
+            current_window: CurrentWindow::Playlists,
             more: MrCtx::No,
             sort_options: false,
             sorting_by: SortBy::Name,
-            main_text: "Files".to_string()
+            main_text: "Playlists".to_string()
         }
     }
     pub fn get_tabs_window(&mut self, ui: &mut egui::Ui){
@@ -608,6 +608,9 @@ impl Windows {
             nm = format!("{0} - {1}", s.name, s.artist);
         }
         let i = self.cover_adder.get_image(&s.album);
+        if nm == String::new(){
+            return (nm, &None)
+        }
         return (nm, i)
     }
 }

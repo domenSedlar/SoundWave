@@ -11,6 +11,7 @@ pub struct AlbumCovers {
     name: String,
     image: String,
     i: RetainedImage,
+    def: Option<RetainedImage>,
     covers: HashMap<String, Option<RetainedImage>>,
     label_text: String
 }
@@ -29,7 +30,10 @@ impl AlbumCovers {
                 "./var/rustacean-flat-happy.svg",
                 &fs::read("./var/rustacean-flat-happy.svg").unwrap(),
                 egui_extras::image::FitTo::Size(200,100)).unwrap(),
-
+            def: Some(
+                egui_extras::RetainedImage::from_image_bytes(
+                    "def",
+                    &fs::read("./var/def").unwrap()).unwrap()),
             covers: ls,
             label_text: "".to_string()
         }
@@ -49,7 +53,7 @@ impl AlbumCovers {
             return self.covers.get(cv_nm).unwrap();
         }
 
-        return &None
+        return &self.def
     }
 
     pub fn get_adding_window(&mut self, ui: &mut egui::Ui){

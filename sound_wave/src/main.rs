@@ -21,7 +21,7 @@ fn main(){
     };
 
     eframe::run_native(
-        "My egui App",
+        "SoundWave",
         options,
         Box::new(|_cc| Box::new(MyApp::default())),
     )

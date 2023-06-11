@@ -92,7 +92,7 @@ impl Controller {
     }
 
     pub fn get_window(&mut self, ui: &mut Ui) {
-        self.position = self.player.recv();
+        self.position = self.player.recv() * self.player.get_len() / 100;
 
         ui.columns(5,|columns| {
             if columns[0].button("<").clicked() {
@@ -117,13 +117,17 @@ impl Controller {
             }
         });
         ui.horizontal(|ui| {
-            ui.spacing_mut().slider_width = ui.available_width()- 50.0;
-            if ui.add(egui::Slider::new(&mut self.position, 0..=100)).drag_released(){
-                self.player.send(Command::SetPosInSeconds(self.position));
-            };
+            ui.spacing_mut().slider_width = ui.available_width()- 100.0;
+            if ui.add(egui::Slider::new(&mut self.position, 0..=self.player.get_len())).drag_released()
+            {
+                let q = self.player.get_len();
+                self.player.send(Command::SetPosInSeconds(self.position * 100 / q));
+            }
+            ui.label(self.player.get_len().to_string());
+            egui::Context::request_repaint_after(ui.ctx(), std::time::Duration::from_millis(250));
         });
 
-        if self.position == 100 {
+        if self.position == self.player.get_len() {
             self.next();
         }
     }
@@ -153,16 +157,19 @@ pub enum Command {
 pub struct Player {
     tx: Option<mpsc::Sender<Command>>,
     rx: single_value_channel::Receiver<u64>,
+    lrx: single_value_channel::Receiver<u64>,
     handle : Option<JoinHandle<()>>
 }
 
 impl Player {
     pub fn default() -> Player{
         let (rx, tx) = channel_starting_with::<u64>(0);
+        let (lrx, ltx) = channel_starting_with::<u64>(100);
 
         Player{
             tx: Option::None,
             rx,
+            lrx,
             handle: Option::None
         }
     }
@@ -186,10 +193,19 @@ impl Player {
 
         let (tx1, rx1) = mpsc::channel::<Command>();
         let (mut rx2, tx2) = channel_starting_with::<u64>(0);
+        let (mut lrx2, ltx2) = channel_starting_with::<u64>(100);
         println!("{}", &song);
-        let handle = thread::spawn(move || start(song ,rx1, tx2));
+        let handle = thread::spawn(move || start(song ,rx1, tx2, ltx2));
         self.tx = Option::Some(tx1);
         self.rx = rx2;
+        self.lrx = lrx2;
         self.handle = Option::Some(handle);
+    }
+
+    pub fn get_len(&mut self) -> u64{
+        match self.tx{
+            None => {100}
+            Some(_) => {*self.lrx.latest()}
+        }
     }
 }
